@@ -3,54 +3,72 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Splittip design system — dark track is the only theme this app uses.
+ * Tokens copied from STYLE_GUIDE.md (design_handoff_splittip), mapped onto
+ * shadcn's semantic variable names so every ui/* primitive picks them up
+ * automatically.
+ */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.596 0.115 163.2);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.965 0.03 162.5);
-  --accent-foreground: oklch(0.35 0.09 163.2);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.596 0.115 163.2);
-}
+  color-scheme: dark;
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.696 0.135 162.5);
-  --primary-foreground: oklch(0.16 0.03 163.2);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.28 0.045 162.5);
-  --accent-foreground: oklch(0.9 0.06 162.5);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.696 0.135 162.5);
+  /* brand green — the only chromatic accent */
+  --green-400: #4ade80;
+  --green-500: #3ecf8e; /* primary accent */
+  --green-600: #24b47e; /* press state */
+
+  /* night ladder — dark track, 800 is canvas */
+  --night-950: #141414;
+  --night-900: #181818;
+  --night-800: #1c1c1c; /* canvas */
+  --night-700: #202020; /* raised cards */
+  --night-600: #262626; /* nested chrome, hover, inset surfaces */
+  --night-500: #2e2e2e; /* hairline border */
+  --night-400: #3d3d3d; /* strong border */
+
+  /* neutral ink ladder */
+  --grey-600: #b2b2b2; /* secondary text on dark */
+  --grey-700: #9a9a9a; /* muted text on dark */
+  --grey-800: #707070; /* faint text on dark */
+  --ink-950: #171717; /* text-inverse / on-accent */
+
+  /* semantic status colors */
+  --status-positive: var(--green-500);
+  --status-negative: #e2005a; /* viz-crimson */
+  --status-warning: #ffdb13; /* viz-yellow */
+
+  /* radius scale (explicit px, not derived) */
+  --radius-sm: 6px; /* buttons, inputs */
+  --radius-md: 8px; /* compact cards, inset rows */
+  --radius-lg: 12px; /* cards, panels */
+  --radius-xl: 16px; /* modals */
+
+  /* shadcn semantic tokens, mapped onto the palette above */
+  --background: var(--night-800);
+  --foreground: #ffffff;
+  --card: var(--night-700);
+  --card-foreground: #ffffff;
+  --popover: var(--night-700);
+  --popover-foreground: #ffffff;
+  --primary: var(--green-500);
+  --primary-foreground: var(--ink-950); /* ink on green, never white */
+  --secondary: var(--night-600);
+  --secondary-foreground: #ffffff;
+  --muted: var(--night-600);
+  --muted-foreground: var(--grey-700);
+  --accent: var(--night-600);
+  --accent-foreground: #ffffff;
+  --destructive: var(--status-negative);
+  --border: var(--night-500);
+  --input: var(--night-500);
+  --ring: var(--green-500);
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -69,6 +87,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-warning: var(--status-warning);
+  --color-positive: var(--status-positive);
+  --color-negative: var(--status-negative);
 }
 
 @layer base {
@@ -77,5 +98,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   }
 }

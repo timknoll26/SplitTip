@@ -13,10 +13,10 @@ function App() {
   const stepIndex = STEPS.indexOf(step)
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-6 px-4 py-8 sm:py-10">
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">SplitTip</h1>
+    <div className="mx-auto flex min-h-svh max-w-2xl flex-col gap-8 px-4 py-8 sm:py-10">
+      <header className="flex flex-col gap-5">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl font-medium tracking-tight">SplitTip</h1>
           <p className="text-sm text-muted-foreground">
             Faires Trinkgeld-Pooling nach Schichtzeit und Stoßzeiten.
           </p>

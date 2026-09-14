@@ -50,16 +50,16 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {result.totalWeightedMinutes <= 0 && (
-          <Alert className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          <Alert variant="warning">
             <TriangleAlert />
             <AlertTitle>Keine gültigen Schichten</AlertTitle>
-            <AlertDescription className="text-amber-800 dark:text-amber-300">
+            <AlertDescription>
               Es konnte keine Verteilung berechnet werden. Prüfe die Kommt-/Geht-Zeiten deines Teams.
             </AlertDescription>
           </Alert>
         )}
 
-        <Accordion type="multiple" className="rounded-lg border border-border px-3">
+        <Accordion type="multiple" className="rounded-md border border-border px-3">
           {result.payouts.map((p) => (
             <AccordionItem key={p.participantId} value={p.participantId}>
               <AccordionTrigger>
@@ -71,7 +71,7 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
                       {formatPercent(p.hoursShare)}
                     </span>
                   </div>
-                  <span className="font-semibold tabular-nums text-primary">{formatEUR(p.amount)}</span>
+                  <span className="font-mono font-semibold text-primary">{formatEUR(p.amount)}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
@@ -86,7 +86,7 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
                         <span>
                           {wb.label || 'Unbenannt'} ({wb.multiplier.toFixed(2)}x)
                         </span>
-                        <span className="tabular-nums">
+                        <span className="font-mono">
                           {formatDuration(wb.minutes)} → {formatDuration(wb.weightedMinutes)}
                         </span>
                       </div>
@@ -94,7 +94,7 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
                     {p.normalMinutes > 0 && (
                       <div className="flex justify-between gap-2">
                         <span>Normalzeit (1.00x)</span>
-                        <span className="tabular-nums">{formatDuration(p.normalMinutes)}</span>
+                        <span className="font-mono">{formatDuration(p.normalMinutes)}</span>
                       </div>
                     )}
                     {p.windowBreakdown.length === 0 && p.normalMinutes <= 0 && (
@@ -107,9 +107,9 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
           ))}
         </Accordion>
 
-        <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 text-sm font-semibold">
+        <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2.5 text-sm font-medium">
           <span>Summe</span>
-          <span className="tabular-nums">{formatEUR(result.payouts.reduce((s, p) => s + p.amount, 0))}</span>
+          <span className="font-mono">{formatEUR(result.payouts.reduce((s, p) => s + p.amount, 0))}</span>
         </div>
 
         <Button onClick={handleCopy} variant="outline" className="gap-2">

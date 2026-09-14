@@ -19,7 +19,7 @@ export function ParticipantRow({ participant: p, windows }: ParticipantRowProps)
   const covering = getCoveringWindows(p, windows)
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
+    <div className="flex flex-col gap-2 rounded-md border border-border p-3.5">
       <div className="flex items-center gap-2">
         <Input
           value={p.name}
@@ -51,7 +51,7 @@ export function ParticipantRow({ participant: p, windows }: ParticipantRowProps)
       </div>
 
       {isInvalidShift && (
-        <Badge variant="destructive" className="self-start">
+        <Badge variant="outline" className="self-start border-destructive text-destructive">
           Über Mitternacht wird nicht unterstützt
         </Badge>
       )}

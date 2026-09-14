@@ -60,7 +60,7 @@ export function PoolSetup({ onNext }: PoolSetupProps) {
                 value={totalTip || ''}
                 onChange={(e) => setTotalTip(Number(e.target.value))}
                 placeholder="0,00"
-                className="pr-7"
+                className="pr-7 font-mono"
               />
               <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
                 €

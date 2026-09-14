@@ -49,10 +49,10 @@ export function IntensityWindowManager({ onNext, onBack }: IntensityWindowManage
         </div>
 
         {overlaps.length > 0 && (
-          <Alert className="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          <Alert variant="warning">
             <TriangleAlert />
             <AlertTitle>Überschneidende Zeitfenster</AlertTitle>
-            <AlertDescription className="text-amber-800 dark:text-amber-300">
+            <AlertDescription>
               {overlaps.map(({ a, b, overlapStart, overlapEnd }) => (
                 <p key={`${a.id}-${b.id}`}>
                   „{a.label || 'Unbenannt'}“ und „{b.label || 'Unbenannt'}“ überschneiden sich von{' '}
@@ -69,7 +69,7 @@ export function IntensityWindowManager({ onNext, onBack }: IntensityWindowManage
             <IntensityWindowRow key={w.id} window={w} />
           ))}
           {windows.length === 0 && (
-            <p className="rounded-lg border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+            <p className="rounded-md border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
               Noch keine Zeitfenster. Nutze die Vorschläge oben oder füge ein eigenes hinzu.
             </p>
           )}

@@ -41,13 +41,13 @@ export function ParticipantInput({ onNext, onBack }: ParticipantInputProps) {
             <ParticipantRow key={p.id} participant={p} windows={windows} />
           ))}
           {participants.length === 0 && (
-            <p className="rounded-lg border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+            <p className="rounded-md border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
               Noch niemand erfasst. Füge unten die erste Person hinzu.
             </p>
           )}
         </div>
 
-        <div className="flex items-end gap-2 rounded-lg border border-border bg-muted/30 p-3">
+        <div className="flex items-end gap-2 rounded-md border border-border bg-muted/30 p-3.5">
           <div className="flex flex-1 flex-col gap-1">
             <label className="text-xs text-muted-foreground" htmlFor="participant-name">
               Name

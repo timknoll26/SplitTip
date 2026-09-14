@@ -14,7 +14,7 @@ export function IntensityWindowRow({ window: w }: IntensityWindowRowProps) {
   const removeIntensityWindow = useTipPoolStore((s) => s.removeIntensityWindow)
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+    <div className="flex flex-col gap-3 rounded-md border border-border p-3.5">
       <div className="flex items-center gap-2">
         <Input
           value={w.label}
@@ -57,7 +57,7 @@ export function IntensityWindowRow({ window: w }: IntensityWindowRowProps) {
           onValueChange={([value]) => updateIntensityWindow(w.id, { multiplier: value })}
           className="flex-1"
         />
-        <span className="w-12 shrink-0 text-right text-sm font-medium tabular-nums text-foreground">
+        <span className="w-12 shrink-0 text-right font-mono text-sm font-medium text-foreground">
           {w.multiplier.toFixed(2)}x
         </span>
       </div>
