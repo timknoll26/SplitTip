@@ -1,0 +1,197 @@
+import { overlapMinutes, timeToMinutes, unionMinutes } from '@/lib/time'
+import type {
+  IntensityWindow,
+  Participant,
+  ParticipantBreakdown,
+  SplitResult,
+  WindowBreakdown,
+  WindowOverlap,
+} from '@/types'
+
+/** Multiplier applied to shift time that falls outside every intensity window. */
+const BASE_MULTIPLIER = 1
+
+function toCents(amount: number): number {
+  return Math.round(amount * 100)
+}
+
+function fromCents(cents: number): number {
+  return cents / 100
+}
+
+function isValidWindow(w: IntensityWindow): boolean {
+  return timeToMinutes(w.endTime) > timeToMinutes(w.startTime)
+}
+
+/**
+ * Finds pairs of intensity windows whose time ranges overlap. Overlapping
+ * windows aren't rejected by the calculator (each still contributes its own
+ * overlap x multiplier to any shift that covers it), but the UI should warn
+ * about them since the covered minutes get weighted more than once.
+ */
+export function detectOverlappingWindows(windows: IntensityWindow[]): WindowOverlap[] {
+  const valid = windows.filter(isValidWindow)
+  const overlaps: WindowOverlap[] = []
+
+  for (let i = 0; i < valid.length; i++) {
+    for (let j = i + 1; j < valid.length; j++) {
+      const a = valid[i]
+      const b = valid[j]
+      const aStart = timeToMinutes(a.startTime)
+      const aEnd = timeToMinutes(a.endTime)
+      const bStart = timeToMinutes(b.startTime)
+      const bEnd = timeToMinutes(b.endTime)
+      const overlapStart = Math.max(aStart, bStart)
+      const overlapEnd = Math.min(aEnd, bEnd)
+      if (overlapEnd > overlapStart) {
+        overlaps.push({ a, b, overlapStart, overlapEnd })
+      }
+    }
+  }
+
+  return overlaps
+}
+
+/** Intensity windows that overlap a given shift, each annotated with its overlap length. */
+export function getCoveringWindows(
+  shift: Pick<Participant, 'startTime' | 'endTime'>,
+  windows: IntensityWindow[]
+): Array<IntensityWindow & { overlapMinutes: number }> {
+  const start = timeToMinutes(shift.startTime)
+  const end = timeToMinutes(shift.endTime)
+  if (end <= start) return []
+
+  return windows
+    .filter(isValidWindow)
+    .map((w) => ({
+      ...w,
+      overlapMinutes: overlapMinutes(start, end, timeToMinutes(w.startTime), timeToMinutes(w.endTime)),
+    }))
+    .filter((w) => w.overlapMinutes > 0)
+}
+
+type WeightedShift = Omit<ParticipantBreakdown, 'hoursShare' | 'rawAmount' | 'amount'>
+
+/**
+ * Overlaps a single shift against every intensity window: overlapping minutes
+ * are weighted by that window's multiplier, and whatever's left of the shift
+ * (the union of all windows subtracted out) is weighted 1.0x as normal time.
+ * Overnight shifts (endTime <= startTime) aren't supported — they come back
+ * as a zero-weight, flagged shift instead of throwing.
+ */
+function computeShiftWeight(participant: Participant, windows: IntensityWindow[]): WeightedShift {
+  const start = timeToMinutes(participant.startTime)
+  const end = timeToMinutes(participant.endTime)
+  const isInvalidShift = end <= start
+
+  if (isInvalidShift) {
+    return {
+      participantId: participant.id,
+      name: participant.name,
+      startTime: participant.startTime,
+      endTime: participant.endTime,
+      shiftMinutes: 0,
+      normalMinutes: 0,
+      weightedMinutes: 0,
+      windowBreakdown: [],
+      isInvalidShift: true,
+    }
+  }
+
+  const shiftMinutes = end - start
+  const windowBreakdown: WindowBreakdown[] = []
+  const coveredIntervals: Array<[number, number]> = []
+  let weightedFromWindows = 0
+
+  for (const w of windows) {
+    if (!isValidWindow(w)) continue
+    const wStart = timeToMinutes(w.startTime)
+    const wEnd = timeToMinutes(w.endTime)
+    const ov = overlapMinutes(start, end, wStart, wEnd)
+    if (ov <= 0) continue
+
+    windowBreakdown.push({
+      windowId: w.id,
+      label: w.label,
+      multiplier: w.multiplier,
+      minutes: ov,
+      weightedMinutes: ov * w.multiplier,
+    })
+    weightedFromWindows += ov * w.multiplier
+    coveredIntervals.push([Math.max(start, wStart), Math.min(end, wEnd)])
+  }
+
+  const normalMinutes = shiftMinutes - unionMinutes(coveredIntervals)
+  const weightedMinutes = weightedFromWindows + normalMinutes * BASE_MULTIPLIER
+
+  return {
+    participantId: participant.id,
+    name: participant.name,
+    startTime: participant.startTime,
+    endTime: participant.endTime,
+    shiftMinutes,
+    normalMinutes,
+    weightedMinutes,
+    windowBreakdown,
+    isInvalidShift: false,
+  }
+}
+
+/**
+ * Splits a tip pool across participants proportionally to their intensity-
+ * weighted shift minutes. Uses the largest-remainder method so payouts
+ * always sum to exactly totalTip (to the cent), regardless of how unevenly
+ * the proportional shares round.
+ */
+export function calculateSplit(
+  totalTip: number,
+  participants: Participant[],
+  intensityWindows: IntensityWindow[]
+): SplitResult {
+  const totalCents = toCents(totalTip)
+  const shifts = participants.map((p) => computeShiftWeight(p, intensityWindows))
+  const totalWeightedMinutes = shifts.reduce((sum, s) => sum + s.weightedMinutes, 0)
+
+  if (totalWeightedMinutes <= 0) {
+    return {
+      totalTip,
+      totalWeightedMinutes,
+      payouts: shifts.map((s) => ({ ...s, hoursShare: 0, rawAmount: 0, amount: 0 })),
+      roundingAdjustmentCents: 0,
+    }
+  }
+
+  const raw = shifts.map((s) => {
+    const hoursShare = s.weightedMinutes / totalWeightedMinutes
+    const rawCents = (totalCents * s.weightedMinutes) / totalWeightedMinutes
+    return { shift: s, hoursShare, rawCents, flooredCents: Math.floor(rawCents) }
+  })
+
+  const flooredSum = raw.reduce((sum, r) => sum + r.flooredCents, 0)
+  let remainderCents = totalCents - flooredSum
+
+  const byRemainderDesc = [...raw].sort(
+    (a, b) => b.rawCents - b.flooredCents - (a.rawCents - a.flooredCents)
+  )
+
+  const centsById = new Map(raw.map((r) => [r.shift.participantId, r.flooredCents]))
+  for (const r of byRemainderDesc) {
+    if (remainderCents <= 0) break
+    centsById.set(r.shift.participantId, (centsById.get(r.shift.participantId) ?? 0) + 1)
+    remainderCents -= 1
+  }
+
+  const payouts: ParticipantBreakdown[] = raw.map((r) => ({
+    ...r.shift,
+    hoursShare: r.hoursShare,
+    rawAmount: fromCents(r.rawCents),
+    amount: fromCents(centsById.get(r.shift.participantId) ?? 0),
+  }))
+
+  return {
+    totalTip,
+    totalWeightedMinutes,
+    payouts,
+    roundingAdjustmentCents: totalCents - flooredSum,
+  }
+}
