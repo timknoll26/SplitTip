@@ -17,8 +17,8 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 - [ ] Accounts und Login (Supabase)
 - [ ] Team-Zugang: Mitarbeiter sehen eigene Auszahlung
 - [ ] Abo-Abwicklung (Stripe)
-- [ ] Landing Page, Pricing-Seite, FAQ
-- [ ] Impressum und Datenschutzerklärung (rechtlich Pflicht)
+- [x] Landing Page (Pricing-Seite, FAQ fehlen noch)
+- [x] Impressum und Datenschutzerklärung (rechtlich Pflicht) — Gerüst steht, Platzhalter `[...]` in `public/impressum.html` und `public/datenschutz.html` müssen noch mit echten Namen/Adresse/Kontakt gefüllt werden
 
 ## Später
 
