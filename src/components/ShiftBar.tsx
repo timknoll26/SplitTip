@@ -231,7 +231,20 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
         </div>
       </PopoverAnchor>
 
-      <PopoverContent align="start" className="w-64">
+      {/*
+        Popover content renders through a portal, but React still bubbles its
+        events up the *component* tree — through this Popover, into the row
+        — even though it's not a DOM descendant of the row. Stop pointer
+        events here so interacting with the popover never re-triggers the
+        row's own drag/create handlers underneath.
+      */}
+      <PopoverContent
+        align="start"
+        className="w-64"
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerMove={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+      >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
             <Label htmlFor={`shift-name-${participant.id}`}>Name</Label>
