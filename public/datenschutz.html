@@ -3,11 +3,10 @@
 <head>
 <title>Datenschutz — SplitTip</title>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('splittip-theme')!=='light')document.documentElement.classList.add('dark')}catch(e){document.documentElement.classList.add('dark')}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/fonts/inter.css">
 <link rel="stylesheet" href="/landing.css">
 </head>
 <body>
@@ -18,6 +17,12 @@
       <a href="/">Zur Startseite</a>
       <a href="/app/">App öffnen</a>
     </nav>
+    <div class="nav-cta">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Farbschema wechseln" aria-pressed="true">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -32,27 +37,29 @@
     <div class="legal-content">
       <h2>Verantwortlicher</h2>
       <p>
-        [Vor- und Nachname]<br>
-        [Straße und Hausnummer, PLZ, Ort]<br>
-        E-Mail: [deine-email@example.com]
+        Tim Knoll<br>
+        Talblick 1, 93182 Duggendorf, Deutschland<br>
+        E-Mail: timknoll26@gmail.com
       </p>
-      <p><em>Hinweis: Die eckigen Klammern hier und im <a href="/impressum.html">Impressum</a> müssen vor Veröffentlichung durch deine echten Angaben ersetzt werden.</em></p>
 
       <h2>Grundsatz: keine Server, keine Konten</h2>
       <p>Die SplitTip-App läuft vollständig im Browser. Namen, Schichtzeiten, Stoßzeitfenster und Trinkgeldbeträge, die du eingibst, werden ausschließlich lokal in deinem Browser gespeichert (Web-Storage/„Local Storage") und zu keinem Zeitpunkt an einen Server von SplitTip oder Dritte übertragen. Es gibt keine Registrierung, kein Nutzerkonto und keine serverseitige Datenbank.</p>
       <p>Diese lokal gespeicherten Daten verlassen dein Gerät nicht, es sei denn, du exportierst sie selbst aktiv (z. B. über die WhatsApp-Textfreigabe). Du kannst sie jederzeit über die Browsereinstellungen deines Geräts löschen (Website-Daten für diese Seite löschen).</p>
+      <p>Rechtsgrundlage für diese lokale Speicherung ist § 25 Abs. 2 Nr. 2 TDDDG (vormals TTDSG): Sie ist technisch unbedingt erforderlich, um die von dir ausdrücklich gewünschte Funktion — das Speichern deiner Eingaben zwischen zwei Besuchen — bereitzustellen. Eine Einwilligung (Cookie-Banner) ist dafür nicht nötig, da keine Cookies und kein Tracking über die reine App-Funktion hinaus eingesetzt werden. Beim ersten Besuch der App weisen wir dich zusätzlich mit einem kurzen, schließbaren Hinweis auf diese lokale Speicherung hin.</p>
 
       <h2>Hosting und Server-Logfiles</h2>
-      <p>Beim Aufruf dieser Website verarbeitet der Hosting-Anbieter automatisch technische Verbindungsdaten (u. a. IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, Browsertyp), wie das bei jedem Webserver technisch notwendig ist. Diese Daten dienen ausschließlich dem sicheren und stabilen Betrieb der Website und werden nicht mit anderen Datenquellen zusammengeführt.</p>
+      <p>Diese Website wird gehostet bei Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA. Beim Aufruf dieser Website verarbeitet Vercel automatisch technische Verbindungsdaten (u. a. IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, Browsertyp), wie das bei jedem Webserver technisch notwendig ist. Diese Daten dienen ausschließlich dem sicheren und stabilen Betrieb der Website und werden nicht mit anderen Datenquellen zusammengeführt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren Betrieb).</p>
+      <p>Da Vercel in den USA sitzt, findet eine Datenübermittlung in ein Drittland statt. Vercel bietet dafür ein Data Processing Addendum auf Basis der EU-Standardvertragsklauseln der Europäischen Kommission an, das die Übermittlung absichert. Weitere Informationen: <a href="https://vercel.com/legal/dpa" target="_blank" rel="noopener noreferrer">Vercel Data Processing Addendum</a>.</p>
 
-      <h2>Google Fonts</h2>
-      <p>Diese Seite lädt die Schriftart „Inter" von Google Fonts (Google Ireland Limited) über <code>fonts.googleapis.com</code> und <code>fonts.gstatic.com</code> nach. Dabei wird deine IP-Adresse an Google übertragen. Google kann diese Verbindungsdaten protokollieren. Weitere Informationen: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google-Datenschutzerklärung</a>.</p>
+      <h2>Schriftarten</h2>
+      <p>Diese Seite bindet die Schriftart „Inter" lokal ein (selbst gehostet, keine Google-Fonts-CDN-Einbindung). Es werden dabei keine Daten an Google oder andere Dritte übertragen.</p>
 
       <h2>Cookies und Tracking</h2>
-      <p>Diese Website setzt keine Tracking- oder Analyse-Cookies ein und verwendet keine Analysedienste (z. B. Google Analytics). Es findet keine Erstellung von Nutzungsprofilen statt.</p>
+      <p>Diese Website setzt keine Cookies, keine Tracking- oder Analyse-Dienste ein (z. B. kein Google Analytics) und erstellt keine Nutzungsprofile. Die einzige gespeicherte Information ist die oben beschriebene lokale App-Daten-Persistierung.</p>
 
       <h2>Deine Rechte</h2>
-      <p>Da keine personenbezogenen Daten serverseitig gespeichert werden, laufen die meisten datenschutzrechtlichen Betroffenenrechte (Auskunft, Löschung, Berichtigung) ins Leere — die einzigen von dir eingegebenen Daten liegen bereits ausschließlich bei dir, lokal im Browser. Bei Fragen kannst du dich jederzeit über die oben genannte E-Mail-Adresse melden.</p>
+      <p>Für die App-Daten (Namen, Schichtzeiten, Trinkgeldbeträge): Da diese nie an uns übertragen werden, laufen die Betroffenenrechte (Auskunft, Löschung, Berichtigung) hierfür ins Leere — die Daten liegen bereits ausschließlich bei dir, lokal im Browser, und du kannst sie jederzeit selbst über die Browsereinstellungen löschen.</p>
+      <p>Für die technisch anfallenden Hosting-Logfiles (s. o.) stehen dir die üblichen Rechte nach der DSGVO zu: Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18), Datenübertragbarkeit (Art. 20) sowie Widerspruch gegen die Verarbeitung (Art. 21 DSGVO). Wende dich dafür an die oben genannte E-Mail-Adresse. Außerdem steht dir ein Beschwerderecht bei einer Datenschutz-Aufsichtsbehörde zu (Art. 77 DSGVO), z. B. bei der für deinen Wohnsitz zuständigen Landesdatenschutzbehörde.</p>
 
       <h2>Änderungen dieser Erklärung</h2>
       <p>Diese Datenschutzerklärung wird angepasst, sobald neue Funktionen (z. B. Nutzerkonten oder Cloud-Speicherung) hinzukommen, die personenbezogene Daten serverseitig verarbeiten.</p>
@@ -72,5 +79,6 @@
   </div>
 </footer>
 
+<script src="/theme.js" defer></script>
 </body>
 </html>

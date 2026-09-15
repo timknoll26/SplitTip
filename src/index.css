@@ -4,35 +4,21 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Splittip design system — dark track is the only theme this app uses.
- * Tokens copied from STYLE_GUIDE.md (design_handoff_splittip), mapped onto
- * shadcn's semantic variable names so every ui/* primitive picks them up
- * automatically.
+ * Splittip design system — light is the base (:root), dark is the ".dark"
+ * class override on <html>. The toggle in App.tsx flips that class; the
+ * inline script in app/index.html sets it before first paint (default: dark)
+ * so there's no flash of the wrong theme. Brand green and status colors stay
+ * constant across both themes — see design.md.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* brand green — the only chromatic accent */
+  /* brand green — the only chromatic accent, constant across themes */
   --green-400: #4ade80;
   --green-500: #3ecf8e; /* primary accent */
   --green-600: #24b47e; /* press state */
 
-  /* night ladder — dark track, 800 is canvas */
-  --night-950: #141414;
-  --night-900: #181818;
-  --night-800: #1c1c1c; /* canvas */
-  --night-700: #202020; /* raised cards */
-  --night-600: #262626; /* nested chrome, hover, inset surfaces */
-  --night-500: #2e2e2e; /* hairline border */
-  --night-400: #3d3d3d; /* strong border */
-
-  /* neutral ink ladder */
-  --grey-600: #b2b2b2; /* secondary text on dark */
-  --grey-700: #9a9a9a; /* muted text on dark */
-  --grey-800: #707070; /* faint text on dark */
-  --ink-950: #171717; /* text-inverse / on-accent */
-
-  /* semantic status colors */
+  /* semantic status colors — constant across themes */
   --status-positive: var(--green-500);
   --status-negative: #e2005a; /* viz-crimson */
   --status-warning: #ffdb13; /* viz-yellow */
@@ -43,24 +29,71 @@
   --radius-lg: 12px; /* cards, panels */
   --radius-xl: 16px; /* modals */
 
+  /* light surface ladder */
+  --canvas: #ffffff;
+  --canvas-soft: #fafafa;
+  --canvas-raised: #ffffff;
+  --canvas-inset: #f0f0f0;
+  --hairline: #dfdfdf;
+  --hairline-strong: #c7c7c7;
+  --ink: #171717;
+  --ink-mute: #707070;
+  --ink-mute-2: #9a9a9a;
+  --ink-on-accent: #171717; /* text on the green primary — never white, brand rule */
+
   /* shadcn semantic tokens, mapped onto the palette above */
-  --background: var(--night-800);
-  --foreground: #ffffff;
-  --card: var(--night-700);
-  --card-foreground: #ffffff;
-  --popover: var(--night-700);
-  --popover-foreground: #ffffff;
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--canvas-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--canvas-raised);
+  --popover-foreground: var(--ink);
   --primary: var(--green-500);
-  --primary-foreground: var(--ink-950); /* ink on green, never white */
-  --secondary: var(--night-600);
-  --secondary-foreground: #ffffff;
-  --muted: var(--night-600);
-  --muted-foreground: var(--grey-700);
-  --accent: var(--night-600);
-  --accent-foreground: #ffffff;
+  --primary-foreground: var(--ink-on-accent);
+  --secondary: var(--canvas-inset);
+  --secondary-foreground: var(--ink);
+  --muted: var(--canvas-inset);
+  --muted-foreground: var(--ink-mute);
+  --accent: var(--canvas-inset);
+  --accent-foreground: var(--ink);
   --destructive: var(--status-negative);
-  --border: var(--night-500);
-  --input: var(--night-500);
+  --border: var(--hairline);
+  --input: var(--hairline);
+  --ring: var(--green-500);
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* dark surface ladder */
+  --canvas: #1c1c1c;
+  --canvas-soft: #181818;
+  --canvas-raised: #202020;
+  --canvas-inset: #262626;
+  --hairline: #2e2e2e;
+  --hairline-strong: #3d3d3d;
+  --ink: #ffffff;
+  --ink-mute: #9a9a9a;
+  --ink-mute-2: #707070;
+  --ink-on-accent: #171717; /* stays near-black on green, same as light */
+
+  --background: var(--canvas);
+  --foreground: var(--ink);
+  --card: var(--canvas-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--canvas-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--green-500);
+  --primary-foreground: var(--ink-on-accent);
+  --secondary: var(--canvas-inset);
+  --secondary-foreground: var(--ink);
+  --muted: var(--canvas-inset);
+  --muted-foreground: var(--ink-mute);
+  --accent: var(--canvas-inset);
+  --accent-foreground: var(--ink);
+  --destructive: var(--status-negative);
+  --border: var(--hairline);
+  --input: var(--hairline);
   --ring: var(--green-500);
 }
 
@@ -99,5 +132,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }

@@ -3,11 +3,10 @@
 <head>
 <title>SplitTip</title>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('splittip-theme')!=='light')document.documentElement.classList.add('dark')}catch(e){document.documentElement.classList.add('dark')}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/fonts/inter.css">
 <link rel="stylesheet" href="/landing.css">
 </head>
 <body>
@@ -21,6 +20,10 @@
       <a href="#status">Status</a>
     </nav>
     <div class="nav-cta">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Farbschema wechseln" aria-pressed="true">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+      </button>
       <a class="btn btn-outline" href="#beispiel">Beispiel ansehen</a>
       <a class="btn btn-primary" href="/app/">App öffnen</a>
     </div>
@@ -200,5 +203,6 @@
   </div>
 </footer>
 
+<script src="/theme.js" defer></script>
 </body>
 </html>

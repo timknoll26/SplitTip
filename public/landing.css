@@ -17,6 +17,29 @@
   --ink-faint: #b2b2b2;
   --on-primary: #171717;
   --on-dark: #ffffff;
+  color-scheme: light;
+}
+
+/*
+ * Dark track. Same variable names, swapped values — everything on the page
+ * already reads through these custom properties, so this one block is
+ * enough to re-theme the whole site. Brand green (--primary*) and the
+ * "always dark" surfaces (--canvas-night*, --on-dark) stay constant.
+ */
+:root.dark {
+  --canvas: #1c1c1c;
+  --canvas-soft: #181818;
+  --canvas-night: #141414;
+  --canvas-night-soft: #101010;
+  --hairline: #2e2e2e;
+  --hairline-strong: #3d3d3d;
+  --hairline-cool: #262626;
+  --ink: #ffffff;
+  --ink-secondary: #f2f2f2;
+  --ink-mute: #9a9a9a;
+  --ink-mute-2: #707070;
+  --ink-faint: #5c5c5c;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -27,6 +50,7 @@ body {
   font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin: 0;
   padding-inline: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .container { max-width: 1280px; margin-inline: auto; padding-inline: 24px; }
@@ -89,6 +113,19 @@ code, .code-block, .mono-num { font-family: ui-monospace, Menlo, Monaco, Consola
 .navlinks a { font-size: 0.9rem; color: var(--ink-mute); text-decoration: none; }
 .navlinks a:hover { color: var(--ink); }
 .nav-cta { display: flex; align-items: center; gap: 10px; }
+
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 6px;
+  border: 1px solid var(--hairline-strong); background: var(--canvas);
+  color: var(--ink); cursor: pointer; flex: none;
+}
+.theme-toggle:hover { border-color: var(--ink-mute); }
+.theme-toggle svg { width: 18px; height: 18px; }
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+:root.dark .theme-toggle .icon-sun { display: block; }
+:root.dark .theme-toggle .icon-moon { display: none; }
 
 /* hero */
 .hero { padding-block: 56px 0; }

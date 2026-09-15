@@ -3,11 +3,10 @@
 <head>
 <title>Impressum — SplitTip</title>
 <meta charset="utf-8">
+<script>try{if(localStorage.getItem('splittip-theme')!=='light')document.documentElement.classList.add('dark')}catch(e){document.documentElement.classList.add('dark')}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/fonts/inter.css">
 <link rel="stylesheet" href="/landing.css">
 </head>
 <body>
@@ -18,6 +17,12 @@
       <a href="/">Zur Startseite</a>
       <a href="/app/">App öffnen</a>
     </nav>
+    <div class="nav-cta">
+      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Farbschema wechseln" aria-pressed="true">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -30,27 +35,27 @@
 <section style="padding-top:0;">
   <div class="container">
     <div class="legal-content">
-      <p><strong>Hinweis:</strong> Diese Seite ist ein Platzhalter-Gerüst nach den Vorgaben des § 5 TMG / § 18 MStV. Die eckigen Klammern müssen vor Veröffentlichung durch deine echten Angaben ersetzt werden — ich kenne deinen Namen, deine Anschrift und Kontaktdaten nicht und darf sie nicht erfinden.</p>
+      <p><strong>Hinweis:</strong> Angaben nach § 5 DDG (Digitale-Dienste-Gesetz, hat das TMG am 14.05.2024 abgelöst) und § 18 Abs. 2 MStV. Privates, nicht-gewerbliches Projekt — es entfallen daher USt-IdNr., Handelsregister und Geschäftsführer-Angaben. Die E-Mail-Adresse unten ist übergangsweise die private Adresse, bis eine eigene Domain mit projektbezogener Adresse steht.</p>
 
-      <h2>Angaben gemäß § 5 TMG</h2>
+      <h2>Angaben gemäß § 5 DDG</h2>
       <p>
-        [Vor- und Nachname]<br>
-        [Straße und Hausnummer]<br>
-        [Postleitzahl und Ort]<br>
-        [Land]
+        Tim Knoll<br>
+        Talblick 1<br>
+        93182 Duggendorf<br>
+        Deutschland
       </p>
 
       <h2>Kontakt</h2>
       <p>
-        E-Mail: [deine-email@example.com]<br>
-        Telefon (optional): [Telefonnummer]
+        E-Mail: timknoll26@gmail.com
       </p>
+      <p class="body-copy" style="font-size:0.9rem;">Hinweis zum Kontakt: Nach aktueller Rechtsprechung (EuGH, Urt. v. 05.05.2022, Rs. C-179/21) reicht eine E-Mail-Adresse allein aus, wenn tatsächlich zeitnah geantwortet wird — ein zusätzlicher Kanal (Telefon/Kontaktformular) ist bei einem privaten Projekt wie diesem nicht zwingend nötig.</p>
 
       <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
-      <p>[Vor- und Nachname, Anschrift wie oben]</p>
+      <p>Tim Knoll, Anschrift wie oben</p>
 
       <h2>Haftung für Inhalte</h2>
-      <p>Als Diensteanbieter bin ich gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG bin ich als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
+      <p>Als Diensteanbieter bin ich gemäß § 7 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach § 7 DDG i. V. m. Art. 4 bis 8 der Verordnung (EU) 2022/2065 (Digital Services Act) bin ich als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.</p>
 
       <h2>Haftung für Links</h2>
       <p>Dieses Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte ich keinen Einfluss habe. Deshalb kann ich für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich.</p>
@@ -73,5 +78,6 @@
   </div>
 </footer>
 
+<script src="/theme.js" defer></script>
 </body>
 </html>
