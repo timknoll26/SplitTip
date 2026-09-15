@@ -29,3 +29,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 
 - [ ] Trinkgeld-Statistik pro Person über Zeit
 - [ ] Mehrsprachigkeit
+
+## Code-Qualität (nicht dringend)
+
+- [ ] Code-Optimierung: mehr wiederverwendbarer Code (z. B. ShiftBar und IntensityLane teilen sich aktuell sehr ähnliche Drag-Logik, die dupliziert statt geteilt ist), sowie Trennung von HTML/Struktur und CSS/Styling sauberer durchziehen
