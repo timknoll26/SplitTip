@@ -175,14 +175,16 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
             >
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
-                className="absolute inset-y-0 left-0 w-3 cursor-ew-resize"
+                className="absolute inset-y-0 left-0 w-3 cursor-ew-resize touch-none pointer-coarse:w-5"
+                aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
               />
               <span className="pointer-events-none truncate">
                 {effectiveStart}–{effectiveEnd}
               </span>
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
-                className="absolute inset-y-0 right-0 w-3 cursor-ew-resize"
+                className="absolute inset-y-0 right-0 w-3 cursor-ew-resize touch-none pointer-coarse:w-5"
+                aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
               />
             </div>
           )}
