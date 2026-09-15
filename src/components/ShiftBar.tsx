@@ -84,37 +84,38 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
     beginDrag(e, 'create', anchor, anchor)
   }
 
-  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!activeDrag || e.pointerId !== activeDrag.pointerId) return
-    const deltaMin = (e.clientX - activeDrag.startClientX) / PX_PER_MINUTE
+  /**
+   * Same math for both the live preview and the final commit, so a commit
+   * never depends on a pointermove having fired first — a fast or
+   * programmatic drag can jump straight from pointerdown to pointerup with
+   * no move events in between.
+   */
+  function resolveDrag(e: React.PointerEvent<HTMLDivElement>, drag: ActiveDrag): { start: number; end: number } {
+    const deltaMin = (e.clientX - drag.startClientX) / PX_PER_MINUTE
 
-    let newStart = activeDrag.originStart
-    let newEnd = activeDrag.originEnd
-
-    if (activeDrag.mode === 'move') {
-      const duration = activeDrag.originEnd - activeDrag.originStart
-      newStart = clamp(snapMinutes(activeDrag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
-      newEnd = newStart + duration
-    } else if (activeDrag.mode === 'resize-start') {
-      newStart = clamp(
-        snapMinutes(activeDrag.originStart + deltaMin),
-        range.startMinutes,
-        activeDrag.originEnd - MIN_SHIFT_MINUTES
-      )
-    } else if (activeDrag.mode === 'resize-end') {
-      newEnd = clamp(
-        snapMinutes(activeDrag.originEnd + deltaMin),
-        activeDrag.originStart + MIN_SHIFT_MINUTES,
-        range.endMinutes
-      )
-    } else {
-      const trackLeft = e.currentTarget.getBoundingClientRect().left
-      const current = clamp(snapMinutes(xToMinutes(e.clientX - trackLeft, range)), range.startMinutes, range.endMinutes)
-      newStart = Math.min(activeDrag.originStart, current)
-      newEnd = Math.max(activeDrag.originStart, current)
+    if (drag.mode === 'move') {
+      const duration = drag.originEnd - drag.originStart
+      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
+      return { start, end: start + duration }
+    }
+    if (drag.mode === 'resize-start') {
+      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, drag.originEnd - MIN_SHIFT_MINUTES)
+      return { start, end: drag.originEnd }
+    }
+    if (drag.mode === 'resize-end') {
+      const end = clamp(snapMinutes(drag.originEnd + deltaMin), drag.originStart + MIN_SHIFT_MINUTES, range.endMinutes)
+      return { start: drag.originStart, end }
     }
 
-    onPreview(minutesToTime(newStart), minutesToTime(newEnd))
+    const trackLeft = e.currentTarget.getBoundingClientRect().left
+    const current = clamp(snapMinutes(xToMinutes(e.clientX - trackLeft, range)), range.startMinutes, range.endMinutes)
+    return { start: Math.min(drag.originStart, current), end: Math.max(drag.originStart, current) }
+  }
+
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!activeDrag || e.pointerId !== activeDrag.pointerId) return
+    const { start, end } = resolveDrag(e, activeDrag)
+    onPreview(minutesToTime(start), minutesToTime(end))
   }
 
   function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
@@ -122,12 +123,9 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
     const hadRealMovement = Math.abs(e.clientX - activeDrag.startClientX) > DRAG_CLICK_THRESHOLD_PX
 
     if (hadRealMovement) {
-      const finalStart = previewOverride ? timeToMinutes(previewOverride.startTime) : activeDrag.originStart
-      const finalEnd = previewOverride ? timeToMinutes(previewOverride.endTime) : activeDrag.originEnd
-      const end = activeDrag.mode === 'create' && finalEnd - finalStart < MIN_SHIFT_MINUTES
-        ? finalStart + MIN_SHIFT_MINUTES
-        : finalEnd
-      onCommit(minutesToTime(finalStart), minutesToTime(end))
+      const { start, end } = resolveDrag(e, activeDrag)
+      const finalEnd = activeDrag.mode === 'create' && end - start < MIN_SHIFT_MINUTES ? start + MIN_SHIFT_MINUTES : end
+      onCommit(minutesToTime(start), minutesToTime(finalEnd))
     } else {
       setPopoverOpen(true)
     }
