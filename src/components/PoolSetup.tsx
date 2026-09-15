@@ -21,13 +21,17 @@ export function PoolSetup({ onNext }: PoolSetupProps) {
 
   return (
     <Card className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+      <CardHeader className="sm:px-8">
+        <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
+          <span className="size-1.5 rounded-full bg-primary" />
+          GRUNDDATEN
+        </div>
+        <CardTitle className="flex items-center gap-2 text-xl">
           <Wallet className="size-5 text-primary" />
           Neuer Trinkgeld-Pool
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 sm:px-8">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="pool-name">Name des Pools</Label>
           <Input

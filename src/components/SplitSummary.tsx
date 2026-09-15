@@ -44,11 +44,19 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
 
   return (
     <Card className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <CardHeader>
-        <CardTitle>{poolName || 'Trinkgeld-Pool'}</CardTitle>
-        <p className="text-sm text-muted-foreground">Gesamt: {formatEUR(result.totalTip)}</p>
+      <CardHeader className="sm:px-8">
+        <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
+          <span className="size-1.5 rounded-full bg-primary" />
+          AUSZAHLUNG
+        </div>
+        <CardTitle className="text-base font-normal text-muted-foreground">
+          {poolName || 'Trinkgeld-Pool'}
+        </CardTitle>
+        <p className="font-mono text-3xl font-semibold tracking-tight text-foreground">
+          {formatEUR(result.totalTip)}
+        </p>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 sm:px-8">
         {result.totalWeightedMinutes <= 0 && (
           <Alert variant="warning">
             <TriangleAlert />

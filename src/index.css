@@ -41,8 +41,14 @@
   --ink-mute-2: #9a9a9a;
   --ink-on-accent: #171717; /* text on the green primary — never white, brand rule */
 
-  /* shadcn semantic tokens, mapped onto the palette above */
-  --background: var(--canvas);
+  /*
+   * shadcn semantic tokens. Note --background uses canvas-soft, not canvas:
+   * canvas and canvas-raised are the same white in light mode, so cards need
+   * a barely-tinted page underneath them to read as a lifted surface at all
+   * (dark mode already has this contrast — canvas-raised is visibly lighter
+   * than canvas there).
+   */
+  --background: var(--canvas-soft);
   --foreground: var(--ink);
   --card: var(--canvas-raised);
   --card-foreground: var(--ink);

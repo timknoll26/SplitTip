@@ -26,14 +26,18 @@ export function ScheduleStep({ onNext, onBack }: ScheduleStepProps) {
 
   return (
     <Card className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <CardHeader>
-        <CardTitle>Zeitplan</CardTitle>
+      <CardHeader className="sm:px-8">
+        <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
+          <span className="size-1.5 rounded-full bg-primary" />
+          PLANUNG
+        </div>
+        <CardTitle className="text-xl">Zeitplan</CardTitle>
         <p className="text-sm text-muted-foreground">
           Ziehe oben die Stoßzeiten und darunter je Person die Schicht auf die Zeitachse. Klick auf
           einen Balken öffnet die genaue Zeiteingabe.
         </p>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 sm:px-8">
         {overlaps.length > 0 && (
           <Alert variant="warning">
             <TriangleAlert />
