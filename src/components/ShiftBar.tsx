@@ -12,6 +12,7 @@ import {
   DRAG_CLICK_THRESHOLD_PX,
   minutesToX,
   MIN_SHIFT_MINUTES,
+  NAME_COLUMN_PX,
   PX_PER_MINUTE,
   ROW_HEIGHT_PX,
   snapMinutes,
@@ -184,9 +185,14 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
-              className="absolute inset-1 flex cursor-crosshair items-center justify-center rounded-sm border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-primary"
+              className="absolute inset-1 flex cursor-crosshair items-center rounded-sm border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-primary"
             >
-              Ziehen oder tippen für Schicht
+              {/* The hint text is sticky to the visible scroll area — a full day is much
+                  wider than the viewport, so centering it in the row would put it
+                  off-screen at almost any scroll position. */}
+              <span className="sticky pointer-events-none px-2 whitespace-nowrap" style={{ left: NAME_COLUMN_PX + 8 }}>
+                Ziehen oder tippen für Schicht
+              </span>
             </div>
           ) : (
             <div

@@ -191,8 +191,10 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
         onPointerCancel={handlePointerCancel}
       >
         {windows.length === 0 && !activeDrag && (
-          <div className="pointer-events-none absolute inset-1 flex items-center justify-center rounded-sm border border-dashed border-border text-xs text-muted-foreground">
-            Ziehen oder tippen für ein Stoßzeit-Fenster
+          <div className="pointer-events-none absolute inset-1 flex items-center rounded-sm border border-dashed border-border text-xs text-muted-foreground">
+            <span className="sticky px-2 whitespace-nowrap" style={{ left: NAME_COLUMN_PX + 8 }}>
+              Ziehen oder tippen für ein Stoßzeit-Fenster
+            </span>
           </div>
         )}
 

@@ -79,14 +79,22 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
                       {formatPercent(p.hoursShare)}
                     </span>
                   </div>
-                  <span className="font-mono font-semibold text-primary">{formatEUR(p.amount)}</span>
+                  <span className="font-mono font-semibold text-primary">
+                    {p.isInvalidShift ? '—' : formatEUR(p.amount)}
+                  </span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 {p.isInvalidShift ? (
-                  <p className="text-sm text-destructive">
-                    Schicht über Mitternacht wird aktuell nicht unterstützt – bitte Zeiten anpassen.
-                  </p>
+                  p.startTime === p.endTime ? (
+                    <p className="text-sm text-muted-foreground">
+                      Keine Schichtzeit erfasst — im Zeitplan-Schritt auf der Zeile ziehen.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-destructive">
+                      Schicht über Mitternacht wird aktuell nicht unterstützt – bitte Zeiten anpassen.
+                    </p>
+                  )
                 ) : (
                   <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
                     {p.windowBreakdown.map((wb) => (
