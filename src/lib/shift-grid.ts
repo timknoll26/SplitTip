@@ -1,14 +1,9 @@
-import { timeToMinutes } from '@/lib/time'
-import type { IntensityWindow, Participant } from '@/types'
-
 /** Horizontal resolution of the shift matrix timeline. */
-export const PX_PER_MINUTE = 3
+export const PX_PER_MINUTE = 2
 /** Drag/resize values snap to this grid. */
 export const SNAP_MINUTES = 15
 /** Shortest shift a drag/resize can produce. */
 export const MIN_SHIFT_MINUTES = 15
-/** The timeline never renders narrower than this, even for a single short shift. */
-export const MIN_RANGE_MINUTES = 6 * 60
 /** Pointer movement below this (px) on release counts as a click, not a drag. */
 export const DRAG_CLICK_THRESHOLD_PX = 5
 
@@ -23,36 +18,14 @@ export interface TimelineRange {
   endMinutes: number
 }
 
-const DEFAULT_RANGE: TimelineRange = { startMinutes: 9 * 60, endMinutes: 15 * 60 }
-
 /**
- * Timeline bounds derived from every participant shift and intensity window,
- * rounded outward to full hours. Only fed from committed store state (never
- * from an in-progress drag preview) so the axis doesn't shift under the
- * pointer while dragging.
+ * The matrix always shows the full day (00:00-24:00), not just the span
+ * already covered by entered shifts/windows — a narrower, data-derived range
+ * made it impossible to drag out a shift starting later than whatever was
+ * already on the timeline. Horizontal scroll (see ShiftMatrix's wrapper)
+ * covers screens too narrow to show all 24 hours at once.
  */
-export function computeTimelineRange(
-  participants: Participant[],
-  windows: IntensityWindow[]
-): TimelineRange {
-  const values: number[] = []
-  for (const p of participants) {
-    values.push(timeToMinutes(p.startTime), timeToMinutes(p.endTime))
-  }
-  for (const w of windows) {
-    values.push(timeToMinutes(w.startTime), timeToMinutes(w.endTime))
-  }
-
-  if (values.length === 0) return DEFAULT_RANGE
-
-  const startMinutes = Math.floor(Math.min(...values) / 60) * 60
-  let endMinutes = Math.ceil(Math.max(...values) / 60) * 60
-  if (endMinutes - startMinutes < MIN_RANGE_MINUTES) {
-    endMinutes = startMinutes + MIN_RANGE_MINUTES
-  }
-
-  return { startMinutes, endMinutes }
-}
+export const FULL_DAY_RANGE: TimelineRange = { startMinutes: 0, endMinutes: 24 * 60 }
 
 export function snapMinutes(minutes: number): number {
   return Math.round(minutes / SNAP_MINUTES) * SNAP_MINUTES

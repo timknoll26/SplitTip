@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,7 +7,7 @@ import { ShiftBar } from '@/components/ShiftBar'
 import { ShiftMatrixLivePreview } from '@/components/ShiftMatrixLivePreview'
 import {
   clamp,
-  computeTimelineRange,
+  FULL_DAY_RANGE,
   HEADER_HEIGHT_PX,
   hourTicks,
   minutesToX,
@@ -99,10 +99,25 @@ export function ShiftMatrix() {
   const [windowDragPreview, setWindowDragPreview] = useState<WindowDragPreview | null>(null)
   const [draftName, setDraftName] = useState('')
 
-  const range = useMemo(
-    () => computeTimelineRange(participants, intensityWindows),
-    [participants, intensityWindows]
-  )
+  const range: TimelineRange = FULL_DAY_RANGE
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // On first mount, scroll to whatever's earliest already on the timeline
+  // (or 07:00 as a sane default for an empty pool) instead of dumping the
+  // user at 00:00 on a full 24h canvas.
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    const existingStarts = [
+      ...participants.map((p) => timeToMinutes(p.startTime)),
+      ...intensityWindows.map((w) => timeToMinutes(w.startTime)),
+    ].filter((m) => m > 0)
+    const target = existingStarts.length > 0 ? Math.min(...existingStarts) : 7 * 60
+    container.scrollLeft = Math.max(0, minutesToX(target, range) - 24)
+    // Intentionally mount-only: this sets the initial scroll, it shouldn't
+    // keep yanking the view back every time data changes afterward.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const effectiveParticipants = useMemo(() => {
     if (!shiftDragPreview) return participants
@@ -131,7 +146,7 @@ export function ShiftMatrix() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div ref={scrollContainerRef} className="overflow-x-auto rounded-md border border-border">
         <div style={{ width: NAME_COLUMN_PX + rangeWidthPx(range) }}>
           <div className="flex border-b border-border">
             <div
