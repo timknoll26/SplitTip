@@ -12,9 +12,11 @@ export const MIN_RANGE_MINUTES = 6 * 60
 /** Pointer movement below this (px) on release counts as a click, not a drag. */
 export const DRAG_CLICK_THRESHOLD_PX = 5
 
-export const ROW_HEIGHT_PX = 56
+export const ROW_HEIGHT_PX = 60
 export const HEADER_HEIGHT_PX = 32
-export const NAME_COLUMN_PX = 88
+export const NAME_COLUMN_PX = 140
+/** Height of the interactive stress-window lane at the top of the matrix. */
+export const LANE_HEIGHT_PX = 60
 
 export interface TimelineRange {
   startMinutes: number

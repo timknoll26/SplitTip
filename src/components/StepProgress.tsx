@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 
-const STEP_LABELS = ['Pool', 'Zeitfenster', 'Team', 'Ergebnis'] as const
+const STEP_LABELS = ['Pool', 'Zeitplan', 'Ergebnis'] as const
 
 interface StepProgressProps {
   currentIndex: number

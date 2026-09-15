@@ -13,7 +13,8 @@ interface TipPoolState {
   setDate: (date: string) => void
   setTotalTip: (amount: number) => void
 
-  addIntensityWindow: (window: Omit<IntensityWindow, 'id'>) => void
+  /** Returns the new window's id so callers can e.g. auto-open its editor. */
+  addIntensityWindow: (window: Omit<IntensityWindow, 'id'>) => string
   updateIntensityWindow: (id: string, patch: Partial<Omit<IntensityWindow, 'id'>>) => void
   removeIntensityWindow: (id: string) => void
 
@@ -49,10 +50,13 @@ export const useTipPoolStore = create<TipPoolState>()(
       setDate: (date) => set({ date }),
       setTotalTip: (amount) => set({ totalTip: Math.max(0, amount) }),
 
-      addIntensityWindow: (window) =>
+      addIntensityWindow: (window) => {
+        const id = createId()
         set((state) => ({
-          intensityWindows: [...state.intensityWindows, { ...window, id: createId() }],
-        })),
+          intensityWindows: [...state.intensityWindows, { ...window, id }],
+        }))
+        return id
+      },
 
       updateIntensityWindow: (id, patch) =>
         set((state) => ({

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { IntensityLane } from '@/components/IntensityLane'
 import { ShiftBar } from '@/components/ShiftBar'
 import { ShiftMatrixLivePreview } from '@/components/ShiftMatrixLivePreview'
 import {
@@ -16,17 +17,20 @@ import {
   type TimelineRange,
 } from '@/lib/shift-grid'
 import { minutesToTime, timeToMinutes } from '@/lib/time'
-import { cn } from '@/lib/utils'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { IntensityWindow } from '@/types'
 
-interface DragPreview {
+interface ShiftDragPreview {
   participantId: string
   startTime: string
   endTime: string
 }
 
-const BAND_COLOR_CLASSES = ['bg-primary/15 border-primary/40', 'bg-warning/15 border-warning/40', 'bg-negative/15 border-negative/40']
+interface WindowDragPreview {
+  windowId: string
+  startTime: string
+  endTime: string
+}
 
 function TimeAxisHeader({ range }: { range: TimelineRange }) {
   const ticks = hourTicks(range)
@@ -61,7 +65,7 @@ function IntensityBandsOverlay({
       className="pointer-events-none absolute z-0"
       style={{ left: NAME_COLUMN_PX, top: 0, height: ROW_HEIGHT_PX * rowCount, width: rangeWidthPx(range) }}
     >
-      {windows.map((w, i) => {
+      {windows.map((w) => {
         const start = timeToMinutes(w.startTime)
         const end = timeToMinutes(w.endTime)
         if (end <= start) return null
@@ -70,15 +74,7 @@ function IntensityBandsOverlay({
         if (width <= 0) return null
 
         return (
-          <div
-            key={w.id}
-            className={cn('absolute top-0 h-full border-x', BAND_COLOR_CLASSES[i % BAND_COLOR_CLASSES.length])}
-            style={{ left, width }}
-          >
-            <span className="absolute top-1 left-1 rounded-sm bg-background/70 px-1 text-[10px] font-medium whitespace-nowrap text-foreground">
-              {w.label || 'Unbenannt'} · {w.multiplier.toFixed(2)}x
-            </span>
-          </div>
+          <div key={w.id} className="absolute top-0 h-full border-x border-warning/30 bg-warning/10" style={{ left, width }} />
         )
       })}
     </div>
@@ -86,9 +82,11 @@ function IntensityBandsOverlay({
 }
 
 /**
- * Visual, drag-based replacement for the shift entry form: a Gantt-style
- * matrix with a fixed name column and a horizontal time axis. Bars read from
- * and write to the same Participant model the calculator already uses.
+ * Visual, drag-based replacement for both the stress-window form and the
+ * shift entry form: a Gantt-style matrix with a fixed name column, a
+ * horizontal time axis, an interactive stress-window lane on top, and one
+ * draggable bar per participant underneath. Everything reads from and
+ * writes to the same store the calculator already consumes.
  */
 export function ShiftMatrix() {
   const participants = useTipPoolStore((s) => s.participants)
@@ -97,7 +95,8 @@ export function ShiftMatrix() {
   const addParticipant = useTipPoolStore((s) => s.addParticipant)
   const updateParticipant = useTipPoolStore((s) => s.updateParticipant)
 
-  const [dragPreview, setDragPreview] = useState<DragPreview | null>(null)
+  const [shiftDragPreview, setShiftDragPreview] = useState<ShiftDragPreview | null>(null)
+  const [windowDragPreview, setWindowDragPreview] = useState<WindowDragPreview | null>(null)
   const [draftName, setDraftName] = useState('')
 
   const range = useMemo(
@@ -106,13 +105,22 @@ export function ShiftMatrix() {
   )
 
   const effectiveParticipants = useMemo(() => {
-    if (!dragPreview) return participants
+    if (!shiftDragPreview) return participants
     return participants.map((p) =>
-      p.id === dragPreview.participantId
-        ? { ...p, startTime: dragPreview.startTime, endTime: dragPreview.endTime }
+      p.id === shiftDragPreview.participantId
+        ? { ...p, startTime: shiftDragPreview.startTime, endTime: shiftDragPreview.endTime }
         : p
     )
-  }, [participants, dragPreview])
+  }, [participants, shiftDragPreview])
+
+  const effectiveIntensityWindows = useMemo(() => {
+    if (!windowDragPreview) return intensityWindows
+    return intensityWindows.map((w) =>
+      w.id === windowDragPreview.windowId
+        ? { ...w, startTime: windowDragPreview.startTime, endTime: windowDragPreview.endTime }
+        : w
+    )
+  }, [intensityWindows, windowDragPreview])
 
   function handleAddParticipant() {
     if (!draftName.trim()) return
@@ -133,14 +141,16 @@ export function ShiftMatrix() {
             <TimeAxisHeader range={range} />
           </div>
 
+          <IntensityLane range={range} onPreview={setWindowDragPreview} />
+
           <div className="relative">
-            <IntensityBandsOverlay range={range} windows={intensityWindows} rowCount={participants.length} />
+            <IntensityBandsOverlay range={range} windows={effectiveIntensityWindows} rowCount={participants.length} />
 
             <div className="relative z-10">
               {participants.map((p) => (
                 <div key={p.id} className="flex border-b border-border">
                   <div
-                    className="sticky left-0 z-20 flex shrink-0 items-center border-r border-border bg-card px-2"
+                    className="sticky left-0 z-20 flex shrink-0 items-center border-r border-border bg-card px-2.5"
                     style={{ width: NAME_COLUMN_PX, height: ROW_HEIGHT_PX }}
                   >
                     <span className="truncate text-sm">{p.name || 'Unbenannt'}</span>
@@ -149,16 +159,16 @@ export function ShiftMatrix() {
                     participant={p}
                     range={range}
                     previewOverride={
-                      dragPreview?.participantId === p.id
-                        ? { startTime: dragPreview.startTime, endTime: dragPreview.endTime }
+                      shiftDragPreview?.participantId === p.id
+                        ? { startTime: shiftDragPreview.startTime, endTime: shiftDragPreview.endTime }
                         : null
                     }
                     onPreview={(startTime, endTime) =>
-                      setDragPreview({ participantId: p.id, startTime, endTime })
+                      setShiftDragPreview({ participantId: p.id, startTime, endTime })
                     }
                     onCommit={(startTime, endTime) => {
                       updateParticipant(p.id, { startTime, endTime })
-                      setDragPreview(null)
+                      setShiftDragPreview(null)
                     }}
                   />
                 </div>
@@ -209,7 +219,7 @@ export function ShiftMatrix() {
       <ShiftMatrixLivePreview
         totalTip={totalTip}
         participants={effectiveParticipants}
-        intensityWindows={intensityWindows}
+        intensityWindows={effectiveIntensityWindows}
       />
     </div>
   )
