@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,12 +8,14 @@ import { minutesToTime, timeToMinutes } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import {
   clamp,
+  DEFAULT_TOUCH_CREATE_MINUTES,
   DRAG_CLICK_THRESHOLD_PX,
   minutesToX,
   MIN_SHIFT_MINUTES,
   PX_PER_MINUTE,
   ROW_HEIGHT_PX,
   snapMinutes,
+  TOUCH_TAP_THRESHOLD_PX,
   xToMinutes,
   type TimelineRange,
 } from '@/lib/shift-grid'
@@ -51,6 +53,8 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
 
   const [activeDrag, setActiveDrag] = useState<ActiveDrag | null>(null)
   const [popoverOpen, setPopoverOpen] = useState(false)
+  /** Pending-tap origin on touch — set on empty-track pointerdown, cleared on release/cancel. Not drag state: we deliberately don't capture the pointer here so a real swipe still scrolls. */
+  const touchTapOrigin = useRef<{ x: number; y: number } | null>(null)
 
   const effectiveStart = previewOverride?.startTime ?? participant.startTime
   const effectiveEnd = previewOverride?.endTime ?? participant.endTime
@@ -79,9 +83,20 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
   }
 
   function handleEmptyTrackPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === 'touch') {
+      // Don't capture or start a drag here — let a real swipe scroll the
+      // row normally. handlePointerUp checks whether this stayed a tap.
+      touchTapOrigin.current = { x: e.clientX, y: e.clientY }
+      return
+    }
     const trackLeft = e.currentTarget.getBoundingClientRect().left
     const anchor = clamp(snapMinutes(xToMinutes(e.clientX - trackLeft, range)), range.startMinutes, range.endMinutes)
     beginDrag(e, 'create', anchor, anchor)
+  }
+
+  function handlePointerCancel() {
+    touchTapOrigin.current = null
+    setActiveDrag(null)
   }
 
   /**
@@ -119,6 +134,23 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
   }
 
   function handlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === 'touch' && touchTapOrigin.current) {
+      const origin = touchTapOrigin.current
+      touchTapOrigin.current = null
+      const moved = Math.hypot(e.clientX - origin.x, e.clientY - origin.y)
+      if (moved <= TOUCH_TAP_THRESHOLD_PX) {
+        const trackLeft = e.currentTarget.getBoundingClientRect().left
+        const start = clamp(
+          snapMinutes(xToMinutes(e.clientX - trackLeft, range)),
+          range.startMinutes,
+          range.endMinutes - DEFAULT_TOUCH_CREATE_MINUTES
+        )
+        onCommit(minutesToTime(start), minutesToTime(start + DEFAULT_TOUCH_CREATE_MINUTES))
+        setPopoverOpen(true)
+      }
+      return
+    }
+
     if (!activeDrag || e.pointerId !== activeDrag.pointerId) return
     const hadRealMovement = Math.abs(e.clientX - activeDrag.startClientX) > DRAG_CLICK_THRESHOLD_PX
 
@@ -136,7 +168,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverAnchor asChild>
         <div
-          className="relative shrink-0 touch-none"
+          className="relative shrink-0"
           style={{
             width: minutesToX(range.endMinutes, range),
             height: ROW_HEIGHT_PX,
@@ -151,17 +183,19 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               onPointerDown={handleEmptyTrackPointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               className="absolute inset-1 flex cursor-crosshair items-center justify-center rounded-sm border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50 hover:text-primary"
             >
-              Ziehen für Schicht
+              Ziehen oder tippen für Schicht
             </div>
           ) : (
             <div
               onPointerDown={handleBarPointerDown}
               onPointerMove={handlePointerMove}
               onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               className={cn(
-                'absolute top-1 bottom-1 flex cursor-grab items-center justify-center gap-1 overflow-hidden rounded-sm bg-primary px-2 text-xs font-mono font-medium text-primary-foreground select-none active:cursor-grabbing',
+                'absolute top-1 bottom-1 flex cursor-grab items-center justify-center gap-1 overflow-hidden touch-none rounded-sm bg-primary px-2 text-xs font-mono font-medium text-primary-foreground select-none active:cursor-grabbing',
                 activeDrag && 'opacity-90 ring-2 ring-ring'
               )}
               style={{

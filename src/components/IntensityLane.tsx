@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Trash2, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,6 +7,7 @@ import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
 import {
   clamp,
+  DEFAULT_TOUCH_CREATE_MINUTES,
   DRAG_CLICK_THRESHOLD_PX,
   LANE_HEIGHT_PX,
   minutesToX,
@@ -15,6 +16,7 @@ import {
   PX_PER_MINUTE,
   rangeWidthPx,
   snapMinutes,
+  TOUCH_TAP_THRESHOLD_PX,
   xToMinutes,
   type TimelineRange,
 } from '@/lib/shift-grid'
@@ -63,6 +65,8 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
   const [activeDrag, setActiveDrag] = useState<ActiveDrag | null>(null)
   const [preview, setPreview] = useState<WindowPreview | null>(null)
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null)
+  /** Pending-tap origin on touch — set on empty-area pointerdown, cleared on release/cancel. Not drag state: we deliberately don't capture the pointer here so a real swipe still scrolls. */
+  const touchTapOrigin = useRef<{ x: number; y: number } | null>(null)
 
   function reportPreview(next: WindowPreview | null) {
     setPreview(next)
@@ -103,6 +107,27 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
   }
 
   function handleLanePointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === 'touch' && touchTapOrigin.current) {
+      const origin = touchTapOrigin.current
+      touchTapOrigin.current = null
+      const moved = Math.hypot(e.clientX - origin.x, e.clientY - origin.y)
+      if (moved <= TOUCH_TAP_THRESHOLD_PX) {
+        const laneLeft = e.currentTarget.getBoundingClientRect().left
+        const start = clamp(
+          snapMinutes(xToMinutes(e.clientX - laneLeft, range)),
+          range.startMinutes,
+          range.endMinutes - DEFAULT_TOUCH_CREATE_MINUTES
+        )
+        const newId = addIntensityWindow({
+          ...NEW_WINDOW_DEFAULTS,
+          startTime: minutesToTime(start),
+          endTime: minutesToTime(start + DEFAULT_TOUCH_CREATE_MINUTES),
+        })
+        setOpenPopoverId(newId)
+      }
+      return
+    }
+
     if (!activeDrag || e.pointerId !== activeDrag.pointerId) return
     const laneLeft = e.currentTarget.getBoundingClientRect().left
     const hadRealMovement = Math.abs(e.clientX - activeDrag.startClientX) > DRAG_CLICK_THRESHOLD_PX
@@ -130,9 +155,21 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
   }
 
   function handleEmptyAreaPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType === 'touch') {
+      // Don't capture or start a drag here — let a real swipe scroll the
+      // lane normally. handleLanePointerUp checks whether this stayed a tap.
+      touchTapOrigin.current = { x: e.clientX, y: e.clientY }
+      return
+    }
     const laneLeft = e.currentTarget.getBoundingClientRect().left
     const anchor = clamp(snapMinutes(xToMinutes(e.clientX - laneLeft, range)), range.startMinutes, range.endMinutes)
     beginDrag(e, 'create', null, anchor, anchor)
+  }
+
+  function handlePointerCancel() {
+    touchTapOrigin.current = null
+    setActiveDrag(null)
+    reportPreview(null)
   }
 
   return (
@@ -146,15 +183,16 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
       </div>
 
       <div
-        className="relative shrink-0 touch-none"
+        className="relative shrink-0"
         style={{ width: rangeWidthPx(range), height: LANE_HEIGHT_PX }}
         onPointerDown={handleEmptyAreaPointerDown}
         onPointerMove={handleLanePointerMove}
         onPointerUp={handleLanePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
         {windows.length === 0 && !activeDrag && (
           <div className="pointer-events-none absolute inset-1 flex items-center justify-center rounded-sm border border-dashed border-border text-xs text-muted-foreground">
-            Ziehen für ein Stoßzeit-Fenster
+            Ziehen oder tippen für ein Stoßzeit-Fenster
           </div>
         )}
 
@@ -245,7 +283,7 @@ function IntensityWindowBar({
         <div
           onPointerDown={onBeginMove}
           className={cn(
-            'absolute top-1 bottom-1 flex cursor-grab items-center justify-center gap-1 overflow-hidden rounded-sm border border-warning/50 bg-warning/25 px-2 text-xs font-medium text-foreground select-none active:cursor-grabbing',
+            'absolute top-1 bottom-1 flex cursor-grab items-center justify-center gap-1 overflow-hidden touch-none rounded-sm border border-warning/50 bg-warning/25 px-2 text-xs font-medium text-foreground select-none active:cursor-grabbing',
             isDragging && 'opacity-90 ring-2 ring-ring'
           )}
           style={{ left, width }}

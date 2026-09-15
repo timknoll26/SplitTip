@@ -6,6 +6,18 @@ export const SNAP_MINUTES = 15
 export const MIN_SHIFT_MINUTES = 15
 /** Pointer movement below this (px) on release counts as a click, not a drag. */
 export const DRAG_CLICK_THRESHOLD_PX = 5
+/**
+ * On touch, dragging out a new bar from empty space competes with the
+ * horizontal swipe-to-scroll gesture over the same area — Google Calendar,
+ * FullCalendar's touch mode, and Deputy all avoid that by not treating a
+ * plain drag on empty space as "create". Movement below this (px) on
+ * release counts as a tap that creates a default-length block instead.
+ * Slightly larger than DRAG_CLICK_THRESHOLD_PX since finger taps drift more
+ * than a mouse click does.
+ */
+export const TOUCH_TAP_THRESHOLD_PX = 10
+/** Length of the block a touch tap-to-create creates, before the user adjusts it. */
+export const DEFAULT_TOUCH_CREATE_MINUTES = 60
 
 export const ROW_HEIGHT_PX = 60
 export const HEADER_HEIGHT_PX = 32
