@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Trash2, Zap } from 'lucide-react'
+import { GripVertical, Trash2, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -295,9 +295,11 @@ function IntensityWindowBar({
               e.stopPropagation()
               onBeginResizeStart(e)
             }}
-            className="absolute inset-y-0 left-0 w-3 cursor-ew-resize touch-none pointer-coarse:w-5"
+            className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
             aria-label={`Start von ${w.label || 'Stoßzeit'} anpassen`}
-          />
+          >
+            <GripVertical className="pointer-events-none size-3 text-foreground/40" />
+          </div>
           <span className="pointer-events-none truncate">
             {w.label || 'Unbenannt'} · {w.multiplier.toFixed(2)}x
           </span>
@@ -306,9 +308,11 @@ function IntensityWindowBar({
               e.stopPropagation()
               onBeginResizeEnd(e)
             }}
-            className="absolute inset-y-0 right-0 w-3 cursor-ew-resize touch-none pointer-coarse:w-5"
+            className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
             aria-label={`Ende von ${w.label || 'Stoßzeit'} anpassen`}
-          />
+          >
+            <GripVertical className="pointer-events-none size-3 text-foreground/40" />
+          </div>
         </div>
       </PopoverAnchor>
 

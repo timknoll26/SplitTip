@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { GripVertical, MoonStar, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,7 @@ import {
   DRAG_CLICK_THRESHOLD_PX,
   minutesToX,
   MIN_SHIFT_MINUTES,
+  mod1440,
   NAME_COLUMN_PX,
   PX_PER_MINUTE,
   ROW_HEIGHT_PX,
@@ -40,13 +41,24 @@ interface ActiveDrag {
   startClientX: number
   originStart: number
   originEnd: number
+  /**
+   * Only set while dragging a segment of a midnight-crossing shift:
+   * - mode 'move': the shift's duration in minutes (so the move can slide
+   *   freely around the 24h cycle instead of clamping to the day edges)
+   * - mode 'resize-start'/'resize-end': the OTHER boundary's real minute
+   *   value, since originStart/originEnd get temporarily pinned to the day
+   *   edge (0 or 1440) so that segment can be resized on its own
+   */
+  aux?: number
 }
 
 /**
  * One participant's row in the shift matrix: an empty dashed track (no shift
- * assigned yet) that can be dragged into a new bar, or a filled bar that can
- * be moved / resized by its edges. Both end in the same click-vs-drag check
- * and the same numeric popover fallback.
+ * assigned yet) that can be dragged into a new bar, a single bar that can be
+ * moved/resized by its edges, or — for a shift crossing midnight (endTime <
+ * startTime) — two linked bar segments (start-24:00 and 00:00-end) that move
+ * together and resize independently at their outer edges. All three end in
+ * the same click-vs-drag check and the same numeric popover fallback.
  */
 export function ShiftBar({ participant, range, previewOverride, onPreview, onCommit }: ShiftBarProps) {
   const removeParticipant = useTipPoolStore((s) => s.removeParticipant)
@@ -61,9 +73,16 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
   const effectiveEnd = previewOverride?.endTime ?? participant.endTime
   const startMinutes = timeToMinutes(effectiveStart)
   const endMinutes = timeToMinutes(effectiveEnd)
-  const isEmpty = endMinutes <= startMinutes
+  const isUnset = endMinutes === startMinutes
+  const wraps = endMinutes < startMinutes
 
-  function beginDrag(e: React.PointerEvent<HTMLDivElement>, mode: DragMode, originStart: number, originEnd: number) {
+  function beginDrag(
+    e: React.PointerEvent<HTMLDivElement>,
+    mode: DragMode,
+    originStart: number,
+    originEnd: number,
+    aux?: number
+  ) {
     e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
     setActiveDrag({
@@ -72,14 +91,28 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
       startClientX: e.clientX,
       originStart,
       originEnd,
+      aux,
     })
   }
 
   function handleBarPointerDown(e: React.PointerEvent<HTMLDivElement>) {
-    beginDrag(e, 'move', startMinutes, endMinutes)
+    if (wraps) {
+      const duration = range.endMinutes - startMinutes + (endMinutes - range.startMinutes)
+      beginDrag(e, 'move', startMinutes, endMinutes, duration)
+    } else {
+      beginDrag(e, 'move', startMinutes, endMinutes)
+    }
   }
 
   function handleEdgePointerDown(e: React.PointerEvent<HTMLDivElement>, edge: 'resize-start' | 'resize-end') {
+    if (wraps) {
+      if (edge === 'resize-start') {
+        beginDrag(e, edge, startMinutes, range.endMinutes, endMinutes)
+      } else {
+        beginDrag(e, edge, range.startMinutes, endMinutes, startMinutes)
+      }
+      return
+    }
     beginDrag(e, edge, startMinutes, endMinutes)
   }
 
@@ -110,17 +143,24 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
     const deltaMin = (e.clientX - drag.startClientX) / PX_PER_MINUTE
 
     if (drag.mode === 'move') {
+      if (drag.aux !== undefined) {
+        // Midnight-crossing shift: slide the whole (start, end) pair freely
+        // around the 24h cycle instead of clamping to the day edges.
+        const duration = drag.aux
+        const start = mod1440(snapMinutes(drag.originStart + deltaMin))
+        return { start, end: mod1440(start + duration) }
+      }
       const duration = drag.originEnd - drag.originStart
       const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
       return { start, end: start + duration }
     }
     if (drag.mode === 'resize-start') {
       const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, drag.originEnd - MIN_SHIFT_MINUTES)
-      return { start, end: drag.originEnd }
+      return { start, end: drag.aux ?? drag.originEnd }
     }
     if (drag.mode === 'resize-end') {
       const end = clamp(snapMinutes(drag.originEnd + deltaMin), drag.originStart + MIN_SHIFT_MINUTES, range.endMinutes)
-      return { start: drag.originStart, end }
+      return { start: drag.aux ?? drag.originStart, end }
     }
 
     const trackLeft = e.currentTarget.getBoundingClientRect().left
@@ -179,7 +219,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               'px)',
           }}
         >
-          {isEmpty ? (
+          {isUnset ? (
             <div
               onPointerDown={handleEmptyTrackPointerDown}
               onPointerMove={handlePointerMove}
@@ -194,6 +234,65 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                 Ziehen oder tippen für Schicht
               </span>
             </div>
+          ) : wraps ? (
+            <>
+              {/* Evening piece: start -> midnight. Its right edge is the day
+                  boundary, not a real edge of the shift, so no resize handle
+                  there — only resize-start on the left. */}
+              <div
+                onPointerDown={handleBarPointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
+                className={cn(
+                  'absolute top-1 bottom-1 flex cursor-grab items-center gap-1 overflow-hidden touch-none rounded-sm rounded-r-none bg-primary pl-2 text-xs font-mono font-medium text-primary-foreground select-none active:cursor-grabbing',
+                  activeDrag && 'opacity-90 ring-2 ring-ring'
+                )}
+                style={{
+                  left: minutesToX(clamp(startMinutes, range.startMinutes, range.endMinutes), range),
+                  width: Math.max(
+                    minutesToX(range.endMinutes, range) - minutesToX(clamp(startMinutes, range.startMinutes, range.endMinutes), range),
+                    8
+                  ),
+                }}
+              >
+                <div
+                  onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
+                  className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
+                  aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
+                >
+                  <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
+                </div>
+                <span className="pointer-events-none truncate">{effectiveStart}–</span>
+                <MoonStar className="pointer-events-none ml-auto size-3 shrink-0 text-primary-foreground/50" />
+              </div>
+
+              {/* Morning piece: midnight -> end. Only resize-end on the right. */}
+              <div
+                onPointerDown={handleBarPointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
+                className={cn(
+                  'absolute top-1 bottom-1 flex cursor-grab items-center gap-1 overflow-hidden touch-none rounded-sm rounded-l-none bg-primary pr-2 text-xs font-mono font-medium text-primary-foreground select-none active:cursor-grabbing',
+                  activeDrag && 'opacity-90 ring-2 ring-ring'
+                )}
+                style={{
+                  left: minutesToX(range.startMinutes, range),
+                  width: Math.max(minutesToX(clamp(endMinutes, range.startMinutes, range.endMinutes), range), 8),
+                }}
+              >
+                <MoonStar className="pointer-events-none mr-auto size-3 shrink-0 text-primary-foreground/50" />
+                <span className="pointer-events-none truncate">–{effectiveEnd}</span>
+                <div
+                  onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
+                  className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
+                  aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
+                >
+                  <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
+                </div>
+              </div>
+            </>
           ) : (
             <div
               onPointerDown={handleBarPointerDown}
@@ -215,17 +314,21 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
             >
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
-                className="absolute inset-y-0 left-0 w-3 cursor-ew-resize touch-none pointer-coarse:w-5"
+                className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
                 aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
-              />
+              >
+                <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
+              </div>
               <span className="pointer-events-none truncate">
                 {effectiveStart}–{effectiveEnd}
               </span>
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
-                className="absolute inset-y-0 right-0 w-3 cursor-ew-resize touch-none pointer-coarse:w-5"
+                className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
                 aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
-              />
+              >
+                <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
+              </div>
             </div>
           )}
         </div>

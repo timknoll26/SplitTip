@@ -77,18 +77,53 @@ describe('calculateSplit', () => {
     expect(payout.normalMinutes).toBe(0)
   })
 
-  it('does not crash on an overnight shift and flags it as invalid instead', () => {
+  it('weights a shift crossing midnight by splitting it into a before- and after-midnight segment', () => {
+    const windows = [
+      window({ id: 'evening', label: 'Abend', startTime: '21:00', endTime: '24:00', multiplier: 1.4 }),
+      window({ id: 'morning', label: 'Morgen', startTime: '00:00', endTime: '01:30', multiplier: 1.6 }),
+    ]
+    const p = participant({ id: 'p1', name: 'Eve', startTime: '22:00', endTime: '01:00' })
+
+    const result = calculateSplit(100, [p], windows)
+    const payout = result.payouts[0]
+
+    // 22:00-24:00 in "Abend" (120 x 1.4 = 168), 00:00-01:00 in "Morgen" (60 x 1.6 = 96)
+    expect(payout.isUnset).toBe(false)
+    expect(payout.shiftMinutes).toBe(180)
+    expect(payout.normalMinutes).toBe(0)
+    expect(payout.windowBreakdown).toHaveLength(2)
+    expect(payout.weightedMinutes).toBeCloseTo(168 + 96)
+  })
+
+  it('merges a single window’s contribution when it overlaps both segments of a wrapping shift', () => {
+    // Spans almost the whole day (00:30-22:30), so it catches both the
+    // pre-midnight and post-midnight piece of the shift below.
+    const windows = [window({ id: 'huge', label: 'Ganztags', startTime: '00:30', endTime: '22:30', multiplier: 1.1 })]
+    const p = participant({ id: 'p1', name: 'Finn', startTime: '22:00', endTime: '01:00' })
+
+    const result = calculateSplit(100, [p], windows)
+    const payout = result.payouts[0]
+
+    // 22:00-22:30 (30 min) + 00:30-01:00 (30 min) = 60 min covered by the same window
+    expect(payout.windowBreakdown).toEqual([
+      { windowId: 'huge', label: 'Ganztags', multiplier: 1.1, minutes: 60, weightedMinutes: 66 },
+    ])
+    expect(payout.normalMinutes).toBe(120)
+    expect(payout.weightedMinutes).toBeCloseTo(66 + 120)
+  })
+
+  it('still treats a same-value start/end shift as unset, not a 24h wrap', () => {
     const windows = [window({ id: 'rush', label: 'Stoßzeit', startTime: '18:00', endTime: '21:00', multiplier: 1.3 })]
-    const overnight = participant({ id: 'p1', name: 'Eve', startTime: '22:00', endTime: '02:00' })
+    const unset = participant({ id: 'p1', name: 'Eve', startTime: '10:00', endTime: '10:00' })
     const normal = participant({ id: 'p2', name: 'Finn', startTime: '18:00', endTime: '20:00' })
 
-    expect(() => calculateSplit(100, [overnight, normal], windows)).not.toThrow()
+    expect(() => calculateSplit(100, [unset, normal], windows)).not.toThrow()
 
-    const result = calculateSplit(100, [overnight, normal], windows)
+    const result = calculateSplit(100, [unset, normal], windows)
     const evePayout = result.payouts.find((p) => p.participantId === 'p1')!
     const finnPayout = result.payouts.find((p) => p.participantId === 'p2')!
 
-    expect(evePayout.isInvalidShift).toBe(true)
+    expect(evePayout.isUnset).toBe(true)
     expect(evePayout.weightedMinutes).toBe(0)
     expect(evePayout.amount).toBe(0)
     expect(finnPayout.amount).toBeCloseTo(100)
@@ -150,8 +185,16 @@ describe('getCoveringWindows', () => {
     expect(covering.find((w) => w.id === 'rush')?.overlapMinutes).toBe(60)
   })
 
-  it('returns an empty list for an overnight (invalid) shift', () => {
+  it('sums overlap across both segments of a shift crossing midnight', () => {
+    const windows = [window({ id: 'rush', startTime: '21:00', endTime: '24:00', multiplier: 1.3 })]
+    const covering = getCoveringWindows({ startTime: '20:00', endTime: '00:30' }, windows)
+    // 21:00-24:00 covers 180 min of the pre-midnight part; the 00:00-00:30
+    // post-midnight part falls outside this particular window.
+    expect(covering).toEqual([{ ...windows[0], overlapMinutes: 180 }])
+  })
+
+  it('returns an empty list for a genuinely unset (start === end) shift', () => {
     const windows = [window({ id: 'rush', startTime: '18:00', endTime: '21:00', multiplier: 1.3 })]
-    expect(getCoveringWindows({ startTime: '22:00', endTime: '02:00' }, windows)).toEqual([])
+    expect(getCoveringWindows({ startTime: '10:00', endTime: '10:00' }, windows)).toEqual([])
   })
 })

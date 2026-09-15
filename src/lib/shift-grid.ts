@@ -43,6 +43,11 @@ export function snapMinutes(minutes: number): number {
   return Math.round(minutes / SNAP_MINUTES) * SNAP_MINUTES
 }
 
+/** Wraps a minute value into the [0, 1440) range of a single day. */
+export function mod1440(minutes: number): number {
+  return ((minutes % 1440) + 1440) % 1440
+}
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
 }

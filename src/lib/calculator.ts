@@ -52,6 +52,21 @@ export function detectOverlappingWindows(windows: IntensityWindow[]): WindowOver
   return overlaps
 }
 
+/**
+ * A shift's clock-time range as one or two same-day segments: a shift that
+ * doesn't cross midnight is one [start, end) segment; one that does (e.g.
+ * 22:00-02:00) becomes [start, 1440) + [0, end), since intensity windows are
+ * always single-day ranges and can't be overlapped directly across the wrap.
+ */
+function shiftSegments(start: number, end: number): Array<[number, number]> {
+  return end < start
+    ? [
+        [start, 24 * 60],
+        [0, end],
+      ]
+    : [[start, end]]
+}
+
 /** Intensity windows that overlap a given shift, each annotated with its overlap length. */
 export function getCoveringWindows(
   shift: Pick<Participant, 'startTime' | 'endTime'>,
@@ -59,14 +74,20 @@ export function getCoveringWindows(
 ): Array<IntensityWindow & { overlapMinutes: number }> {
   const start = timeToMinutes(shift.startTime)
   const end = timeToMinutes(shift.endTime)
-  if (end <= start) return []
+  if (end === start) return []
 
+  const segments = shiftSegments(start, end)
   return windows
     .filter(isValidWindow)
-    .map((w) => ({
-      ...w,
-      overlapMinutes: overlapMinutes(start, end, timeToMinutes(w.startTime), timeToMinutes(w.endTime)),
-    }))
+    .map((w) => {
+      const wStart = timeToMinutes(w.startTime)
+      const wEnd = timeToMinutes(w.endTime)
+      const totalOverlap = segments.reduce(
+        (sum, [s, e]) => sum + overlapMinutes(s, e, wStart, wEnd),
+        0
+      )
+      return { ...w, overlapMinutes: totalOverlap }
+    })
     .filter((w) => w.overlapMinutes > 0)
 }
 
@@ -76,15 +97,17 @@ type WeightedShift = Omit<ParticipantBreakdown, 'hoursShare' | 'rawAmount' | 'am
  * Overlaps a single shift against every intensity window: overlapping minutes
  * are weighted by that window's multiplier, and whatever's left of the shift
  * (the union of all windows subtracted out) is weighted 1.0x as normal time.
- * Overnight shifts (endTime <= startTime) aren't supported — they come back
- * as a zero-weight, flagged shift instead of throwing.
+ * A shift crossing midnight (endTime < startTime, e.g. 22:00-02:00) is split
+ * into its two same-day segments first — see shiftSegments. A shift that was
+ * simply never set (start === end) comes back zero-weight and flagged,
+ * instead of being treated as a one-day-long shift.
  */
 function computeShiftWeight(participant: Participant, windows: IntensityWindow[]): WeightedShift {
   const start = timeToMinutes(participant.startTime)
   const end = timeToMinutes(participant.endTime)
-  const isInvalidShift = end <= start
+  const isUnset = end === start
 
-  if (isInvalidShift) {
+  if (isUnset) {
     return {
       participantId: participant.id,
       name: participant.name,
@@ -94,33 +117,43 @@ function computeShiftWeight(participant: Participant, windows: IntensityWindow[]
       normalMinutes: 0,
       weightedMinutes: 0,
       windowBreakdown: [],
-      isInvalidShift: true,
+      isUnset: true,
     }
   }
 
-  const shiftMinutes = end - start
-  const windowBreakdown: WindowBreakdown[] = []
+  const segments = shiftSegments(start, end)
+  const shiftMinutes = segments.reduce((sum, [s, e]) => sum + (e - s), 0)
   const coveredIntervals: Array<[number, number]> = []
-  let weightedFromWindows = 0
+  const byWindow = new Map<string, WindowBreakdown>()
 
   for (const w of windows) {
     if (!isValidWindow(w)) continue
     const wStart = timeToMinutes(w.startTime)
     const wEnd = timeToMinutes(w.endTime)
-    const ov = overlapMinutes(start, end, wStart, wEnd)
-    if (ov <= 0) continue
 
-    windowBreakdown.push({
-      windowId: w.id,
-      label: w.label,
-      multiplier: w.multiplier,
-      minutes: ov,
-      weightedMinutes: ov * w.multiplier,
-    })
-    weightedFromWindows += ov * w.multiplier
-    coveredIntervals.push([Math.max(start, wStart), Math.min(end, wEnd)])
+    for (const [s, e] of segments) {
+      const ov = overlapMinutes(s, e, wStart, wEnd)
+      if (ov <= 0) continue
+
+      const existing = byWindow.get(w.id)
+      if (existing) {
+        existing.minutes += ov
+        existing.weightedMinutes += ov * w.multiplier
+      } else {
+        byWindow.set(w.id, {
+          windowId: w.id,
+          label: w.label,
+          multiplier: w.multiplier,
+          minutes: ov,
+          weightedMinutes: ov * w.multiplier,
+        })
+      }
+      coveredIntervals.push([Math.max(s, wStart), Math.min(e, wEnd)])
+    }
   }
 
+  const windowBreakdown = [...byWindow.values()]
+  const weightedFromWindows = windowBreakdown.reduce((sum, wb) => sum + wb.weightedMinutes, 0)
   const normalMinutes = shiftMinutes - unionMinutes(coveredIntervals)
   const weightedMinutes = weightedFromWindows + normalMinutes * BASE_MULTIPLIER
 
@@ -133,7 +166,7 @@ function computeShiftWeight(participant: Participant, windows: IntensityWindow[]
     normalMinutes,
     weightedMinutes,
     windowBreakdown,
-    isInvalidShift: false,
+    isUnset: false,
   }
 }
 

@@ -28,7 +28,7 @@ export function ShiftMatrixLivePreview({
             <div key={p.participantId} className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{p.name || 'Unbenannt'}</span>
               <span className="font-mono">
-                {p.isInvalidShift ? '—' : formatEUR(p.amount)}
+                {p.isUnset ? '—' : formatEUR(p.amount)}
               </span>
             </div>
           ))}

@@ -14,7 +14,7 @@ export interface Participant {
   name: string
   /** "HH:MM" */
   startTime: string
-  /** "HH:MM" */
+  /** "HH:MM". Earlier than startTime means the shift crosses midnight (e.g. 22:00-02:00), not an error. */
   endTime: string
 }
 
@@ -47,8 +47,8 @@ export interface ParticipantBreakdown {
   /** Sum of (overlap minutes x multiplier) across all covering windows, plus normalMinutes */
   weightedMinutes: number
   windowBreakdown: WindowBreakdown[]
-  /** true when endTime <= startTime (unsupported overnight shift) */
-  isInvalidShift: boolean
+  /** true when startTime === endTime — a shift that was never actually set, not an overnight shift (those are supported and weighted normally) */
+  isUnset: boolean
   /** Share of totalWeightedMinutes, 0-1 */
   hoursShare: number
   /** Exact (unrounded) payout */

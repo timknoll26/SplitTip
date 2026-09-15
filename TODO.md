@@ -8,13 +8,13 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 - [ ] Mehrere Gruppen/Bereiche (Küche, Service, Bar)
 - [ ] Schicht-Vorlagen (Standardbesetzung laden)
 - [ ] Historie vergangener Abrechnungen
-- [ ] Rollen-Multiplikator (Azubi 0.8x, Schichtleitung 1.2x)
 - [ ] Export als PDF und CSV
-- [ ] Mitternachts-Schichten unterstützen (Schicht über 00:00 hinaus)
+- [x] Mitternachts-Schichten unterstützen (Schicht über 00:00 hinaus) — Rechen-Engine splittet die Schicht intern in zwei Tagesabschnitte, Matrix zeigt sie als zwei verbundene Balken (Abend-/Morgen-Teil), die zusammen verschoben und an den Außenkanten unabhängig verlängert/gekürzt werden können. Bewusst nicht unterstützt: eine Mitternachts-Schicht direkt per Ziehen über den Tagesrand hinaus *neu erstellen* — dafür im Popover (Kommt/Geht) einfach eine Geht-Zeit eintragen, die vor der Kommt-Zeit liegt, z. B. 22:00–02:00.
 
 ## UI/UX
 
 - [x] Light/Dark-Mode-Umschalter — Toggle in der Header-Zeile auf allen Seiten (Landing, App, Impressum, Datenschutz), Startet standardmäßig im Dark Mode, Einstellung wird geteilt (localStorage) und gilt seitenübergreifend
+- [x] Sichtbare Resize-Griffe an Schicht-/Stoßzeit-Balken (waren rein funktional, aber unsichtbar)
 
 ## Business
 
