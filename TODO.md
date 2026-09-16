@@ -4,7 +4,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 
 ## Kern-Features
 
-- [ ] Mitarbeiter-Stammdaten speichern und auswählbar machen
+- [x] Mitarbeiter-Stammdaten speichern und auswählbar machen — jeder eingetragene Name landet automatisch in einer geräteweiten Stammdaten-Liste (übersteht Pool-Reset); beim Eintippen im Zeitplan-Schritt erscheint ein Auswahl-Dropdown mit bereits bekannten Namen (bereits im aktuellen Pool aktive Namen werden ausgeblendet), Klick fügt die Person direkt hinzu; Namen lassen sich per Hover-× aus der Stammdaten-Liste entfernen
 - [ ] Mehrere Gruppen/Bereiche (Küche, Service, Bar)
 - [ ] Schicht-Vorlagen (Standardbesetzung laden)
 - [ ] Historie vergangener Abrechnungen

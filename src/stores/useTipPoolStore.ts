@@ -8,6 +8,8 @@ interface TipPoolState {
   totalTip: number
   intensityWindows: IntensityWindow[]
   participants: Participant[]
+  /** Mitarbeiter-Stammdaten: Namen, die über Pools hinweg zur Auswahl stehen. Übersteht reset(). */
+  employees: string[]
 
   setPoolName: (name: string) => void
   setDate: (date: string) => void
@@ -18,9 +20,13 @@ interface TipPoolState {
   updateIntensityWindow: (id: string, patch: Partial<Omit<IntensityWindow, 'id'>>) => void
   removeIntensityWindow: (id: string) => void
 
+  /** Adds the participant to the current pool and, if new, remembers the name as Stammdaten. */
   addParticipant: (participant: Omit<Participant, 'id'>) => void
   updateParticipant: (id: string, patch: Partial<Omit<Participant, 'id'>>) => void
   removeParticipant: (id: string) => void
+
+  /** Removes a name from the Stammdaten list. Does not touch existing participants. */
+  removeEmployee: (name: string) => void
 
   reset: () => void
 }
@@ -31,6 +37,13 @@ function createId(): string {
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10)
+}
+
+function rememberName(employees: string[], name: string): string[] {
+  const trimmed = name.trim()
+  if (!trimmed) return employees
+  if (employees.some((e) => e.toLowerCase() === trimmed.toLowerCase())) return employees
+  return [...employees, trimmed].sort((a, b) => a.localeCompare(b, 'de'))
 }
 
 const emptyState = {
@@ -45,6 +58,7 @@ export const useTipPoolStore = create<TipPoolState>()(
     (set) => ({
       ...emptyState,
       date: todayISO(),
+      employees: [] as string[],
 
       setPoolName: (name) => set({ poolName: name }),
       setDate: (date) => set({ date }),
@@ -73,6 +87,7 @@ export const useTipPoolStore = create<TipPoolState>()(
       addParticipant: (participant) =>
         set((state) => ({
           participants: [...state.participants, { ...participant, id: createId() }],
+          employees: rememberName(state.employees, participant.name),
         })),
 
       updateParticipant: (id, patch) =>
@@ -83,6 +98,11 @@ export const useTipPoolStore = create<TipPoolState>()(
       removeParticipant: (id) =>
         set((state) => ({
           participants: state.participants.filter((p) => p.id !== id),
+        })),
+
+      removeEmployee: (name) =>
+        set((state) => ({
+          employees: state.employees.filter((e) => e.toLowerCase() !== name.toLowerCase()),
         })),
 
       reset: () => set({ ...emptyState, date: todayISO() }),
