@@ -10,11 +10,13 @@ import {
   clamp,
   DEFAULT_TOUCH_CREATE_MINUTES,
   DRAG_CLICK_THRESHOLD_PX,
+  type DragMode,
+  type DragOrigin,
   minutesToX,
   MIN_SHIFT_MINUTES,
-  mod1440,
   NAME_COLUMN_PX,
   PX_PER_MINUTE,
+  resolveDragInterval,
   ROW_HEIGHT_PX,
   snapMinutes,
   TOUCH_TAP_THRESHOLD_PX,
@@ -33,23 +35,8 @@ interface ShiftBarProps {
   onCommit: (startTime: string, endTime: string) => void
 }
 
-type DragMode = 'move' | 'resize-start' | 'resize-end' | 'create'
-
-interface ActiveDrag {
-  mode: DragMode
+interface ActiveDrag extends DragOrigin {
   pointerId: number
-  startClientX: number
-  originStart: number
-  originEnd: number
-  /**
-   * Only set while dragging a segment of a midnight-crossing shift:
-   * - mode 'move': the shift's duration in minutes (so the move can slide
-   *   freely around the 24h cycle instead of clamping to the day edges)
-   * - mode 'resize-start'/'resize-end': the OTHER boundary's real minute
-   *   value, since originStart/originEnd get temporarily pinned to the day
-   *   edge (0 or 1440) so that segment can be resized on its own
-   */
-  aux?: number
 }
 
 /**
@@ -139,35 +126,12 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
    * Same math for both the live preview and the final commit, so a commit
    * never depends on a pointermove having fired first — a fast or
    * programmatic drag can jump straight from pointerdown to pointerup with
-   * no move events in between.
+   * no move events in between. The interval math itself is shared with
+   * IntensityLane's drag handling — see resolveDragInterval.
    */
   function resolveDrag(e: React.PointerEvent<HTMLDivElement>, drag: ActiveDrag): { start: number; end: number } {
-    const deltaMin = (e.clientX - drag.startClientX) / PX_PER_MINUTE
-
-    if (drag.mode === 'move') {
-      if (drag.aux !== undefined) {
-        // Midnight-crossing shift: slide the whole (start, end) pair freely
-        // around the 24h cycle instead of clamping to the day edges.
-        const duration = drag.aux
-        const start = mod1440(snapMinutes(drag.originStart + deltaMin))
-        return { start, end: mod1440(start + duration) }
-      }
-      const duration = drag.originEnd - drag.originStart
-      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
-      return { start, end: start + duration }
-    }
-    if (drag.mode === 'resize-start') {
-      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, drag.originEnd - MIN_SHIFT_MINUTES)
-      return { start, end: drag.aux ?? drag.originEnd }
-    }
-    if (drag.mode === 'resize-end') {
-      const end = clamp(snapMinutes(drag.originEnd + deltaMin), drag.originStart + MIN_SHIFT_MINUTES, range.endMinutes)
-      return { start: drag.aux ?? drag.originStart, end }
-    }
-
     const trackLeft = e.currentTarget.getBoundingClientRect().left
-    const current = clamp(snapMinutes(xToMinutes(e.clientX - trackLeft, range)), range.startMinutes, range.endMinutes)
-    return { start: Math.min(drag.originStart, current), end: Math.max(drag.originStart, current) }
+    return resolveDragInterval(drag, e.clientX, range, trackLeft)
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {

@@ -33,4 +33,5 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 
 ## Code-Qualität (nicht dringend)
 
-- [ ] Code-Optimierung: mehr wiederverwendbarer Code (z. B. ShiftBar und IntensityLane teilen sich aktuell sehr ähnliche Drag-Logik, die dupliziert statt geteilt ist), sowie Trennung von HTML/Struktur und CSS/Styling sauberer durchziehen
+- [x] Code-Optimierung: ShiftBar/IntensityLane Drag-Logik entduplizieren — die Interval-Berechnung (move/resize-start/resize-end/create, inkl. Mitternachts-Wrap über `aux`) ist jetzt eine gemeinsame, getestete Funktion `resolveDragInterval` in `lib/shift-grid.ts`; beide Komponenten rufen sie nur noch mit ihren jeweiligen Drag-Zustand auf, keine Verhaltensänderung
+- [ ] Trennung von HTML/Struktur und CSS/Styling sauberer durchziehen

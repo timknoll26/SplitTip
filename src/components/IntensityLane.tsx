@@ -9,12 +9,14 @@ import {
   clamp,
   DEFAULT_TOUCH_CREATE_MINUTES,
   DRAG_CLICK_THRESHOLD_PX,
+  type DragMode,
+  type DragOrigin,
   LANE_HEIGHT_PX,
   minutesToX,
   MIN_SHIFT_MINUTES,
   NAME_COLUMN_PX,
-  PX_PER_MINUTE,
   rangeWidthPx,
+  resolveDragInterval,
   snapMinutes,
   TOUCH_TAP_THRESHOLD_PX,
   xToMinutes,
@@ -25,15 +27,9 @@ import { cn } from '@/lib/utils'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { IntensityWindow } from '@/types'
 
-type DragMode = 'move' | 'resize-start' | 'resize-end' | 'create'
-
-interface ActiveDrag {
-  mode: DragMode
+interface ActiveDrag extends DragOrigin {
   windowId: string | null // null while creating a brand new window
   pointerId: number
-  startClientX: number
-  originStart: number
-  originEnd: number
 }
 
 interface WindowPreview {
@@ -79,24 +75,9 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
     setActiveDrag({ mode, windowId, pointerId: e.pointerId, startClientX: e.clientX, originStart, originEnd })
   }
 
+  // Interval math shared with ShiftBar's drag handling — see resolveDragInterval.
   function resolveDrag(e: React.PointerEvent, drag: ActiveDrag, laneLeft: number): { start: number; end: number } {
-    const deltaMin = (e.clientX - drag.startClientX) / PX_PER_MINUTE
-
-    if (drag.mode === 'move') {
-      const duration = drag.originEnd - drag.originStart
-      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
-      return { start, end: start + duration }
-    }
-    if (drag.mode === 'resize-start') {
-      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, drag.originEnd - MIN_SHIFT_MINUTES)
-      return { start, end: drag.originEnd }
-    }
-    if (drag.mode === 'resize-end') {
-      const end = clamp(snapMinutes(drag.originEnd + deltaMin), drag.originStart + MIN_SHIFT_MINUTES, range.endMinutes)
-      return { start: drag.originStart, end }
-    }
-    const current = clamp(snapMinutes(xToMinutes(e.clientX - laneLeft, range)), range.startMinutes, range.endMinutes)
-    return { start: Math.min(drag.originStart, current), end: Math.max(drag.originStart, current) }
+    return resolveDragInterval(drag, e.clientX, range, laneLeft)
   }
 
   function handleLanePointerMove(e: React.PointerEvent<HTMLDivElement>) {
