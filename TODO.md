@@ -28,7 +28,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 
 ## Später
 
-- [ ] Trinkgeld-Statistik pro Person über Zeit
+- [x] Trinkgeld-Statistik pro Person über Zeit — eigene Ansicht ("Statistik"-Button im Header) wertet die Historie pro Person aus (Namen case-insensitiv zusammengeführt), zeigt Gesamtsumme/gewichtete Zeit über alle Pools sowie aufklappbar die chronologische Aufschlüsselung pro Pool
 - [ ] Mehrsprachigkeit
 
 ## Code-Qualität (nicht dringend)

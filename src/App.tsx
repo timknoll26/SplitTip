@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { History as HistoryIcon } from 'lucide-react'
+import { History as HistoryIcon, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { HistoryPage } from '@/components/HistoryPage'
 import { PoolSetup } from '@/components/PoolSetup'
 import { ScheduleStep } from '@/components/ScheduleStep'
 import { SplitSummary } from '@/components/SplitSummary'
+import { StatsPage } from '@/components/StatsPage'
 import { StepProgress } from '@/components/StepProgress'
 import { StorageNotice } from '@/components/StorageNotice'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -14,6 +15,7 @@ import type { HistoryEntry } from '@/types'
 
 const STEPS = ['setup', 'schedule', 'results'] as const
 type Step = (typeof STEPS)[number]
+type Overlay = 'history' | 'stats' | null
 
 // The schedule step hosts the drag-to-build timeline and needs real room to
 // breathe; setup/results are simple forms that read better narrow.
@@ -25,14 +27,14 @@ const STEP_MAX_WIDTH: Record<Step, string> = {
 
 function App() {
   const [step, setStep] = useState<Step>('setup')
-  const [showHistory, setShowHistory] = useState(false)
+  const [overlay, setOverlay] = useState<Overlay>(null)
   const loadFromHistory = useTipPoolStore((s) => s.loadFromHistory)
   const stepIndex = STEPS.indexOf(step)
-  const maxWidth = showHistory ? 'max-w-2xl' : STEP_MAX_WIDTH[step]
+  const maxWidth = overlay ? 'max-w-2xl' : STEP_MAX_WIDTH[step]
 
   function handleRestore(entry: HistoryEntry) {
     loadFromHistory(entry)
-    setShowHistory(false)
+    setOverlay(null)
     setStep('results')
   }
 
@@ -51,22 +53,29 @@ function App() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)}>
+            <Button variant="ghost" size="sm" onClick={() => setOverlay('stats')}>
+              <TrendingUp /> Statistik
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setOverlay('history')}>
               <HistoryIcon /> Historie
             </Button>
             <ThemeToggle />
           </div>
         </div>
-        {!showHistory && <StepProgress currentIndex={stepIndex} />}
+        {!overlay && <StepProgress currentIndex={stepIndex} />}
       </header>
 
       <div className={cn('mx-auto w-full', maxWidth)}>
         <StorageNotice />
       </div>
 
-      {showHistory ? (
+      {overlay === 'history' ? (
         <main className="mx-auto w-full max-w-2xl animate-in fade-in slide-in-from-right-4 duration-300">
-          <HistoryPage onBack={() => setShowHistory(false)} onRestore={handleRestore} />
+          <HistoryPage onBack={() => setOverlay(null)} onRestore={handleRestore} />
+        </main>
+      ) : overlay === 'stats' ? (
+        <main className="mx-auto w-full max-w-2xl animate-in fade-in slide-in-from-right-4 duration-300">
+          <StatsPage onBack={() => setOverlay(null)} />
         </main>
       ) : (
         <main key={step} className={cn('mx-auto w-full animate-in fade-in slide-in-from-right-4 duration-300', maxWidth)}>
