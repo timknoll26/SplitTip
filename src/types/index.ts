@@ -80,6 +80,23 @@ export interface HistoryEntry {
   participants: Participant[]
 }
 
+export interface ShiftTemplateMember {
+  name: string
+  area?: string
+  /** "HH:MM" */
+  startTime: string
+  /** "HH:MM" */
+  endTime: string
+}
+
+export interface ShiftTemplate {
+  id: string
+  name: string
+  /** ISO datetime, when this template was last saved */
+  createdAt: string
+  members: ShiftTemplateMember[]
+}
+
 export interface WindowOverlap {
   a: IntensityWindow
   b: IntensityWindow

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { HistoryEntry, IntensityWindow, Participant } from '@/types'
+import type { HistoryEntry, IntensityWindow, Participant, ShiftTemplate } from '@/types'
 
 interface TipPoolState {
   /** Identifies the pool currently being edited across the setup/schedule/results steps, so it can be upserted into history instead of duplicated. Regenerated on reset(). */
@@ -16,6 +16,8 @@ interface TipPoolState {
   areas: string[]
   /** Abgeschlossene Pools, jüngste zuerst. Übersteht reset(). */
   history: HistoryEntry[]
+  /** Gespeicherte Standardbesetzungen. Übersteht reset(). */
+  templates: ShiftTemplate[]
 
   setPoolName: (name: string) => void
   setDate: (date: string) => void
@@ -39,6 +41,12 @@ interface TipPoolState {
   removeHistoryEntry: (id: string) => void
   /** Replaces the current pool with a saved history entry, so it can be viewed or continued. */
   loadFromHistory: (entry: HistoryEntry) => void
+
+  /** Saves the current participants (name, area, times) as a named template. Overwrites a template with the same name. No-op without participants. */
+  saveTemplate: (name: string) => void
+  removeTemplate: (id: string) => void
+  /** Adds the template's members as new participants, skipping any name already present in the current pool. */
+  applyTemplate: (id: string) => void
 
   reset: () => void
 }
@@ -74,6 +82,7 @@ export const useTipPoolStore = create<TipPoolState>()(
       employees: [] as string[],
       areas: ['Bar', 'Küche', 'Service'],
       history: [] as HistoryEntry[],
+      templates: [] as ShiftTemplate[],
 
       setPoolName: (name) => set({ poolName: name }),
       setDate: (date) => set({ date }),
@@ -152,6 +161,58 @@ export const useTipPoolStore = create<TipPoolState>()(
           totalTip: entry.totalTip,
           intensityWindows: entry.intensityWindows,
           participants: entry.participants,
+        }),
+
+      saveTemplate: (name) =>
+        set((state) => {
+          const trimmed = name.trim()
+          if (!trimmed || state.participants.length === 0) return state
+          const members = state.participants.map((p) => ({
+            name: p.name,
+            area: p.area,
+            startTime: p.startTime,
+            endTime: p.endTime,
+          }))
+          const existingIndex = state.templates.findIndex(
+            (t) => t.name.toLowerCase() === trimmed.toLowerCase()
+          )
+          const template: ShiftTemplate = {
+            id: existingIndex >= 0 ? state.templates[existingIndex].id : createId(),
+            name: trimmed,
+            createdAt: new Date().toISOString(),
+            members,
+          }
+          const templates =
+            existingIndex >= 0
+              ? state.templates.map((t, i) => (i === existingIndex ? template : t))
+              : [...state.templates, template]
+          return { templates }
+        }),
+
+      removeTemplate: (id) =>
+        set((state) => ({ templates: state.templates.filter((t) => t.id !== id) })),
+
+      applyTemplate: (id) =>
+        set((state) => {
+          const template = state.templates.find((t) => t.id === id)
+          if (!template) return state
+          const existingNames = new Set(state.participants.map((p) => p.name.trim().toLowerCase()))
+          const newParticipants = template.members
+            .filter((m) => !existingNames.has(m.name.trim().toLowerCase()))
+            .map((m) => ({ ...m, id: createId() }))
+
+          let employees = state.employees
+          let areas = state.areas
+          for (const m of template.members) {
+            employees = rememberName(employees, m.name)
+            if (m.area) areas = rememberName(areas, m.area)
+          }
+
+          return {
+            participants: [...state.participants, ...newParticipants],
+            employees,
+            areas,
+          }
         }),
 
       reset: () => set({ ...emptyState, date: todayISO(), poolId: createId() }),
