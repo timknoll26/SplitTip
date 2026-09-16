@@ -22,7 +22,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 - [ ] Accounts und Login (Supabase)
 - [ ] Team-Zugang: Mitarbeiter sehen eigene Auszahlung
 - [ ] Abo-Abwicklung (Stripe)
-- [x] Landing Page (Pricing-Seite, FAQ fehlen noch)
+- [x] Landing Page (Pricing-Seite, FAQ fehlen noch) — FAQ-Sektion (Accordion, `<details>`/`<summary>`, kein JS nötig) ergänzt; "Aktueller Stand"-Status auf der Landing Page an den tatsächlichen Funktionsumfang angepasst (CSV/PDF-Export, Stammdaten/Vorlagen, Bereiche/Historie/Statistik jetzt als "fertig" statt "geplant")
 - [x] Impressum und Datenschutzerklärung (rechtlich Pflicht) — vollständig, nutzt aktuell timknoll26@gmail.com als Kontakt-E-Mail
 - [ ] Eigene Domain + projektbezogene E-Mail-Adresse kaufen, dann in Impressum/Datenschutz die private Gmail-Adresse ersetzen
 
