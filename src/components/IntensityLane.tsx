@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import {
   clamp,
   DEFAULT_TOUCH_CREATE_MINUTES,
@@ -53,6 +54,7 @@ const NEW_WINDOW_DEFAULTS = { label: '', multiplier: 1.2 }
  * (no real movement) to open the label/multiplier/time popover.
  */
 export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
+  const { t } = useTranslation()
   const windows = useTipPoolStore((s) => s.intensityWindows)
   const addIntensityWindow = useTipPoolStore((s) => s.addIntensityWindow)
   const updateIntensityWindow = useTipPoolStore((s) => s.updateIntensityWindow)
@@ -160,7 +162,7 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
         style={{ width: NAME_COLUMN_PX, height: LANE_HEIGHT_PX }}
       >
         <Zap className="size-3.5 shrink-0 text-muted-foreground" />
-        <span className="truncate text-xs font-medium text-muted-foreground">Stoßzeiten</span>
+        <span className="truncate text-xs font-medium text-muted-foreground">{t('intensityLane.laneLabel')}</span>
       </div>
 
       <div
@@ -174,7 +176,7 @@ export function IntensityLane({ range, onPreview }: IntensityLaneProps) {
         {windows.length === 0 && !activeDrag && (
           <div className="pointer-events-none absolute inset-1 flex items-center rounded-sm border border-dashed border-border text-xs text-muted-foreground">
             <span className="sticky px-2 whitespace-nowrap" style={{ left: NAME_COLUMN_PX + 8 }}>
-              Ziehen oder tippen für ein Stoßzeit-Fenster
+              {t('intensityLane.emptyHint')}
             </span>
           </div>
         )}
@@ -252,6 +254,7 @@ function IntensityWindowBar({
   onUpdate,
   onRemove,
 }: IntensityWindowBarProps) {
+  const { t } = useTranslation()
   const startMinutes = timeToMinutes(effectiveStart)
   const endMinutes = timeToMinutes(effectiveEnd)
   const left = minutesToX(clamp(startMinutes, range.startMinutes, range.endMinutes), range)
@@ -277,12 +280,12 @@ function IntensityWindowBar({
               onBeginResizeStart(e)
             }}
             className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-            aria-label={`Start von ${w.label || 'Stoßzeit'} anpassen`}
+            aria-label={t('intensityLane.adjustStartAria', { label: w.label || t('intensityLane.defaultLabelFallback') })}
           >
             <GripVertical className="pointer-events-none size-3 text-foreground/40" />
           </div>
           <span className="pointer-events-none truncate">
-            {w.label || 'Unbenannt'} · {w.multiplier.toFixed(2)}x
+            {w.label || t('common.unnamed')} · {w.multiplier.toFixed(2)}x
           </span>
           <div
             onPointerDown={(e) => {
@@ -290,7 +293,7 @@ function IntensityWindowBar({
               onBeginResizeEnd(e)
             }}
             className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-            aria-label={`Ende von ${w.label || 'Stoßzeit'} anpassen`}
+            aria-label={t('intensityLane.adjustEndAria', { label: w.label || t('intensityLane.defaultLabelFallback') })}
           >
             <GripVertical className="pointer-events-none size-3 text-foreground/40" />
           </div>
@@ -313,18 +316,18 @@ function IntensityWindowBar({
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`window-label-${w.id}`}>Bezeichnung</Label>
+            <Label htmlFor={`window-label-${w.id}`}>{t('intensityLane.labelFieldLabel')}</Label>
             <Input
               id={`window-label-${w.id}`}
               value={w.label}
               onChange={(e) => onUpdate({ label: e.target.value })}
-              placeholder="z. B. Stoßzeit Abend"
+              placeholder={t('intensityLane.labelPlaceholder')}
               autoFocus
             />
           </div>
           <div className="flex items-end gap-2">
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor={`window-start-${w.id}`}>Von</Label>
+              <Label htmlFor={`window-start-${w.id}`}>{t('intensityLane.fromLabel')}</Label>
               <Input
                 id={`window-start-${w.id}`}
                 type="time"
@@ -333,7 +336,7 @@ function IntensityWindowBar({
               />
             </div>
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor={`window-end-${w.id}`}>Bis</Label>
+              <Label htmlFor={`window-end-${w.id}`}>{t('intensityLane.toLabel')}</Label>
               <Input
                 id={`window-end-${w.id}`}
                 type="time"
@@ -344,7 +347,7 @@ function IntensityWindowBar({
           </div>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <Label>Multiplikator</Label>
+              <Label>{t('intensityLane.multiplierLabel')}</Label>
               <span className="text-sm font-medium tabular-nums">{w.multiplier.toFixed(2)}x</span>
             </div>
             <Slider
@@ -356,7 +359,7 @@ function IntensityWindowBar({
             />
           </div>
           <Button variant="outline" size="sm" className="self-start text-destructive hover:text-destructive" onClick={onRemove}>
-            <Trash2 /> Entfernen
+            <Trash2 /> {t('common.remove')}
           </Button>
         </div>
       </PopoverContent>

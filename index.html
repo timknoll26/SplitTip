@@ -14,51 +14,52 @@
   <div class="container navbar-inner">
     <a class="logo" href="/">Split<span>Tip</span></a>
     <nav class="navlinks">
-      <a href="#ablauf">Ablauf</a>
-      <a href="#beispiel">Beispiel</a>
-      <a href="#funktionen">Funktionen</a>
-      <a href="#faq">FAQ</a>
-      <a href="#status">Status</a>
+      <a href="#ablauf" data-i18n="nav.ablauf">Ablauf</a>
+      <a href="#beispiel" data-i18n="nav.beispiel">Beispiel</a>
+      <a href="#funktionen" data-i18n="nav.funktionen">Funktionen</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      <a href="#status" data-i18n="nav.status">Status</a>
     </nav>
     <div class="nav-cta">
-      <button type="button" class="theme-toggle" data-theme-toggle aria-label="Farbschema wechseln" aria-pressed="true">
+      <button type="button" class="lang-toggle" data-lang-toggle aria-label="Auf Englisch wechseln">DE</button>
+      <button type="button" class="theme-toggle" data-theme-toggle data-i18n-aria="themeToggle.aria" aria-label="Farbschema wechseln" aria-pressed="true">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
       </button>
-      <a class="btn btn-outline" href="#beispiel">Beispiel ansehen</a>
-      <a class="btn btn-primary" href="/app/">App öffnen</a>
+      <a class="btn btn-outline" href="#beispiel" data-i18n="nav.exampleBtn">Beispiel ansehen</a>
+      <a class="btn btn-primary" href="/app/" data-i18n="nav.openApp">App öffnen</a>
     </div>
   </div>
 </header>
 
 <section class="hero">
   <div class="container hero-inner">
-    <span class="pill pill-soft micro"><span class="dot"></span>MVP · in Entwicklung</span>
-    <h1 class="display-xxl" style="margin-top:18px;">Trinkgeld verteilen, wie es fair ist.</h1>
-    <p class="body-lg lead">SplitTip berechnet die Auszahlung aus Arbeitszeit und Schichtintensität — nicht aus der Kopfzahl. Überlappende Minuten mit euren Stoßzeiten zählen mehr, der Rest normal.</p>
+    <span class="pill pill-soft micro"><span class="dot"></span><span data-i18n="hero.badge">MVP · in Entwicklung</span></span>
+    <h1 class="display-xxl" style="margin-top:18px;" data-i18n="hero.title">Trinkgeld verteilen, wie es fair ist.</h1>
+    <p class="body-lg lead" data-i18n="hero.lead">SplitTip berechnet die Auszahlung aus Arbeitszeit und Schichtintensität — nicht aus der Kopfzahl. Überlappende Minuten mit euren Stoßzeiten zählen mehr, der Rest normal.</p>
     <div class="cta-row">
-      <a class="btn btn-primary" href="/app/">Jetzt starten →</a>
-      <a class="btn btn-outline" href="#ablauf">Ablauf verstehen</a>
+      <a class="btn btn-primary" href="/app/" data-i18n="hero.ctaStart">Jetzt starten →</a>
+      <a class="btn btn-outline" href="#ablauf" data-i18n="hero.ctaLearn">Ablauf verstehen</a>
     </div>
   </div>
 
   <div class="container">
     <div class="mockup-stack">
       <div class="pane pane-back">
-        <div class="pane-head"><span class="dot"></span><span class="title">Stoßzeiten</span></div>
-        <div class="win-row"><span>Stoßzeit Abend, 18:00–21:00</span><span class="mult">×1.3</span></div>
-        <div class="win-row"><span>Sonntagsbrunch, 11:00–14:00</span><span class="mult">×1.1</span></div>
+        <div class="pane-head"><span class="dot"></span><span class="title" data-i18n="hero.mockup.windowsTitle">Stoßzeiten</span></div>
+        <div class="win-row"><span data-i18n="hero.mockup.window1">Stoßzeit Abend, 18:00–21:00</span><span class="mult">×1.3</span></div>
+        <div class="win-row"><span data-i18n="hero.mockup.window2">Sonntagsbrunch, 11:00–14:00</span><span class="mult">×1.1</span></div>
       </div>
       <div class="pane pane-front">
-        <div class="pane-head"><span class="dot"></span><span class="title">Freitagabend · Trinkgeld-Pool</span></div>
+        <div class="pane-head"><span class="dot"></span><span class="title" data-i18n="hero.mockup.poolTitle">Freitagabend · Trinkgeld-Pool</span></div>
         <table class="calc">
-          <thead><tr><th>Name</th><th>Schicht</th><th class="num">Auszahlung</th></tr></thead>
+          <thead><tr><th data-i18n="hero.mockup.thName">Name</th><th data-i18n="hero.mockup.thShift">Schicht</th><th class="num" data-i18n="hero.mockup.thPayout">Auszahlung</th></tr></thead>
           <tbody>
-            <tr><td>Lena</td><td>16:00–23:00</td><td class="num">€90,53</td></tr>
-            <tr><td>Jonas</td><td>18:00–22:00</td><td class="num">€56,15</td></tr>
-            <tr><td>Mia</td><td>20:00–23:00</td><td class="num">€37,82</td></tr>
+            <tr><td>Lena</td><td>16:00–23:00</td><td class="num" data-i18n="hero.mockup.amount1">€90,53</td></tr>
+            <tr><td>Jonas</td><td>18:00–22:00</td><td class="num" data-i18n="hero.mockup.amount2">€56,15</td></tr>
+            <tr><td>Mia</td><td>20:00–23:00</td><td class="num" data-i18n="hero.mockup.amount3">€37,82</td></tr>
           </tbody>
-          <tfoot><tr><td colspan="2">Summe</td><td class="num">€184,50</td></tr></tfoot>
+          <tfoot><tr><td colspan="2" data-i18n="hero.mockup.sum">Summe</td><td class="num" data-i18n="hero.mockup.total">€184,50</td></tr></tfoot>
         </table>
       </div>
     </div>
@@ -68,39 +69,39 @@
 <section class="band-soft" id="problem">
   <div class="container">
     <div class="section-head">
-      <div class="eyebrow"><span class="dot"></span>DAS PROBLEM</div>
-      <h2 class="display-lg">Gleich aufteilen ist nicht gleich fair.</h2>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="problem.eyebrow">DAS PROBLEM</span></div>
+      <h2 class="display-lg" data-i18n="problem.title">Gleich aufteilen ist nicht gleich fair.</h2>
     </div>
-    <p class="body-copy body-md">Wer am ruhigen Dienstagmittag zwei Stunden aushilft, bekommt beim klassischen Kopfteiler genauso viel wie jemand, der die komplette Freitagabend-Rush durchgestanden hat. Das ist schnell gerechnet, fühlt sich aber für niemanden richtig an, der die Stoßzeit getragen hat.</p>
-    <p class="body-copy body-md">SplitTip löst das über Zeitfenster: Wer während einer markierten Stoßzeit im Dienst war, bekommt für genau diese überlappenden Minuten einen höheren Anteil — der Rest der Schicht zählt normal.</p>
+    <p class="body-copy body-md" data-i18n="problem.p1">Wer am ruhigen Dienstagmittag zwei Stunden aushilft, bekommt beim klassischen Kopfteiler genauso viel wie jemand, der die komplette Freitagabend-Rush durchgestanden hat. Das ist schnell gerechnet, fühlt sich aber für niemanden richtig an, der die Stoßzeit getragen hat.</p>
+    <p class="body-copy body-md" data-i18n="problem.p2">SplitTip löst das über Zeitfenster: Wer während einer markierten Stoßzeit im Dienst war, bekommt für genau diese überlappenden Minuten einen höheren Anteil — der Rest der Schicht zählt normal.</p>
   </div>
 </section>
 
 <section id="ablauf">
   <div class="container">
     <div class="section-head">
-      <div class="eyebrow"><span class="dot"></span>ABLAUF</div>
-      <h2 class="display-lg">Drei Schritte bis zur Auszahlung</h2>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="ablauf.eyebrow">ABLAUF</span></div>
+      <h2 class="display-lg" data-i18n="ablauf.title">Drei Schritte bis zur Auszahlung</h2>
     </div>
     <div class="steps">
       <div class="step-card">
         <div class="num">01</div>
-        <h3 class="heading-md">Schicht erfassen</h3>
-        <p>Balken auf der Zeitachse ziehen, statt Formularfelder auszufüllen — auf 15 Minuten genau, nicht auf halbe Stunden gerundet.</p>
+        <h3 class="heading-md" data-i18n="ablauf.step1Title">Schicht erfassen</h3>
+        <p data-i18n="ablauf.step1Desc">Balken auf der Zeitachse ziehen, statt Formularfelder auszufüllen — auf 15 Minuten genau, nicht auf halbe Stunden gerundet.</p>
       </div>
       <div class="step-card">
         <div class="num">02</div>
-        <h3 class="heading-md">Stoßzeit markieren</h3>
-        <p>Ein Zeitfenster wie „Stoßzeit Abend“, 18:00–21:00 Uhr, mit eigenem Multiplikator — z. B. 1,3×.</p>
+        <h3 class="heading-md" data-i18n="ablauf.step2Title">Stoßzeit markieren</h3>
+        <p data-i18n="ablauf.step2Desc">Ein Zeitfenster wie „Stoßzeit Abend“, 18:00–21:00 Uhr, mit eigenem Multiplikator — z. B. 1,3×.</p>
       </div>
       <div class="step-card">
         <div class="num">03</div>
-        <h3 class="heading-md">Automatisch verteilen</h3>
-        <p>Überlappende Minuten zählen mit Multiplikator, der Rest mit 1,0×. Rundung verteilt danach jeden Cent.</p>
+        <h3 class="heading-md" data-i18n="ablauf.step3Title">Automatisch verteilen</h3>
+        <p data-i18n="ablauf.step3Desc">Überlappende Minuten zählen mit Multiplikator, der Rest mit 1,0×. Rundung verteilt danach jeden Cent.</p>
       </div>
     </div>
     <div class="code-block">
-      <div><span class="c2">// für jede Person, pro Stoßzeitfenster</span></div>
+      <div><span class="c2" data-i18n="ablauf.codeComment">// für jede Person, pro Stoßzeitfenster</span></div>
       <div><span class="c1">overlap</span>&nbsp;= intersect(shift, window)</div>
       <div><span class="c1">weighted</span>&nbsp;= overlap * window.multiplier</div>
       <div>&nbsp;&nbsp;&nbsp;&nbsp;+ (shift.duration - overlap) * 1.0</div>
@@ -111,26 +112,26 @@
 <section class="band-soft" id="beispiel">
   <div class="container">
     <div class="section-head">
-      <div class="eyebrow"><span class="dot"></span>RECHENBEISPIEL</div>
-      <h2 class="display-lg">Ein Abend, drei Schichten</h2>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="beispiel.eyebrow">RECHENBEISPIEL</span></div>
+      <h2 class="display-lg" data-i18n="beispiel.title">Ein Abend, drei Schichten</h2>
     </div>
-    <p class="example-meta body-md">Stoßzeit Abend: 18:00–21:00 Uhr · Multiplikator 1,3× · Gesamttrinkgeld €184,50</p>
+    <p class="example-meta body-md" data-i18n="beispiel.meta">Stoßzeit Abend: 18:00–21:00 Uhr · Multiplikator 1,3× · Gesamttrinkgeld €184,50</p>
     <div class="pane example-pane">
-      <div class="pane-head"><span class="dot"></span><span class="title">Freitagabend · Trinkgeld-Pool</span></div>
+      <div class="pane-head"><span class="dot"></span><span class="title" data-i18n="hero.mockup.poolTitle">Freitagabend · Trinkgeld-Pool</span></div>
       <div class="table-scroll">
         <table class="calc">
           <thead>
-            <tr><th>Name</th><th>Schicht</th><th class="num">Überlapp</th><th class="num">Gewichtet</th><th class="num">Auszahlung</th></tr>
+            <tr><th data-i18n="hero.mockup.thName">Name</th><th data-i18n="hero.mockup.thShift">Schicht</th><th class="num" data-i18n="beispiel.thOverlap">Überlapp</th><th class="num" data-i18n="beispiel.thWeighted">Gewichtet</th><th class="num" data-i18n="hero.mockup.thPayout">Auszahlung</th></tr>
           </thead>
           <tbody>
-            <tr><td>Lena</td><td>16:00–23:00</td><td class="num">3,0 h × 1,3</td><td class="num">7,9 h</td><td class="num">€90,53</td></tr>
-            <tr><td>Jonas</td><td>18:00–22:00</td><td class="num">3,0 h × 1,3</td><td class="num">4,9 h</td><td class="num">€56,15</td></tr>
-            <tr><td>Mia</td><td>20:00–23:00</td><td class="num">1,0 h × 1,3</td><td class="num">3,3 h</td><td class="num">€37,82</td></tr>
+            <tr><td>Lena</td><td>16:00–23:00</td><td class="num" data-i18n="beispiel.overlap1">3,0 h × 1,3</td><td class="num" data-i18n="beispiel.weighted1">7,9 h</td><td class="num" data-i18n="hero.mockup.amount1">€90,53</td></tr>
+            <tr><td>Jonas</td><td>18:00–22:00</td><td class="num" data-i18n="beispiel.overlap2">3,0 h × 1,3</td><td class="num" data-i18n="beispiel.weighted2">4,9 h</td><td class="num" data-i18n="hero.mockup.amount2">€56,15</td></tr>
+            <tr><td>Mia</td><td>20:00–23:00</td><td class="num" data-i18n="beispiel.overlap3">1,0 h × 1,3</td><td class="num" data-i18n="beispiel.weighted3">3,3 h</td><td class="num" data-i18n="hero.mockup.amount3">€37,82</td></tr>
           </tbody>
-          <tfoot><tr><td colspan="3">Summe</td><td class="num">16,1 h</td><td class="num">€184,50</td></tr></tfoot>
+          <tfoot><tr><td colspan="3" data-i18n="hero.mockup.sum">Summe</td><td class="num" data-i18n="beispiel.totalWeighted">16,1 h</td><td class="num" data-i18n="hero.mockup.total">€184,50</td></tr></tfoot>
         </table>
       </div>
-      <p class="example-note">Largest-Remainder-Rundung sorgt dafür, dass die drei Auszahlungen exakt das Gesamttrinkgeld ergeben.</p>
+      <p class="example-note" data-i18n="beispiel.note">Largest-Remainder-Rundung sorgt dafür, dass die drei Auszahlungen exakt das Gesamttrinkgeld ergeben.</p>
     </div>
   </div>
 </section>
@@ -138,25 +139,25 @@
 <section id="funktionen">
   <div class="container">
     <div class="section-head">
-      <div class="eyebrow"><span class="dot"></span>FUNKTIONEN</div>
-      <h2 class="display-lg">Gebaut für die Theke, nicht fürs Büro</h2>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="funktionen.eyebrow">FUNKTIONEN</span></div>
+      <h2 class="display-lg" data-i18n="funktionen.title">Gebaut für die Theke, nicht fürs Büro</h2>
     </div>
     <div class="features">
       <div class="feature">
-        <div class="fh"><span class="dot"></span><h3>Schicht-Matrix</h3></div>
-        <p>Balken statt Formularfelder — anlegen, verschieben, an den Kanten anpassen. Per Maus oder am Tablet mit dem Finger.</p>
+        <div class="fh"><span class="dot"></span><h3 data-i18n="funktionen.f1Title">Schicht-Matrix</h3></div>
+        <p data-i18n="funktionen.f1Desc">Balken statt Formularfelder — anlegen, verschieben, an den Kanten anpassen. Per Maus oder am Tablet mit dem Finger.</p>
       </div>
       <div class="feature">
-        <div class="fh"><span class="dot"></span><h3>Ohne Anmeldung</h3></div>
-        <p>Läuft komplett im Browser — kein Account, kein Server. Speichert automatisch in diesem Browser.</p>
+        <div class="fh"><span class="dot"></span><h3 data-i18n="funktionen.f2Title">Ohne Anmeldung</h3></div>
+        <p data-i18n="funktionen.f2Desc">Läuft komplett im Browser — kein Account, kein Server. Speichert automatisch in diesem Browser.</p>
       </div>
       <div class="feature">
-        <div class="fh"><span class="dot"></span><h3>Cent-genau</h3></div>
-        <p>Largest-Remainder-Rundung garantiert: Die Summe stimmt immer exakt.</p>
+        <div class="fh"><span class="dot"></span><h3 data-i18n="funktionen.f3Title">Cent-genau</h3></div>
+        <p data-i18n="funktionen.f3Desc">Largest-Remainder-Rundung garantiert: Die Summe stimmt immer exakt.</p>
       </div>
       <div class="feature">
-        <div class="fh"><span class="dot"></span><h3>WhatsApp-Export</h3></div>
-        <p>Ergebnis als fertiger Text zum Teilen — kein PDF nötig.</p>
+        <div class="fh"><span class="dot"></span><h3 data-i18n="funktionen.f4Title">WhatsApp-Export</h3></div>
+        <p data-i18n="funktionen.f4Desc">Ergebnis als fertiger Text zum Teilen — kein PDF nötig.</p>
       </div>
     </div>
   </div>
@@ -165,41 +166,41 @@
 <section id="faq">
   <div class="container">
     <div class="section-head">
-      <div class="eyebrow"><span class="dot"></span>FAQ</div>
-      <h2 class="display-lg">Häufige Fragen</h2>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="faq.eyebrow">FAQ</span></div>
+      <h2 class="display-lg" data-i18n="faq.title">Häufige Fragen</h2>
     </div>
     <div class="faq-list">
       <details class="faq-item" open>
-        <summary>Kostet SplitTip etwas?</summary>
-        <p>Nein, SplitTip ist aktuell komplett kostenlos nutzbar. Ein Abo ist für später geplant, sobald Funktionen wie Nutzerkonten und Team-Zugänge dazukommen — die Kernfunktion zum Verteilen von Trinkgeld bleibt davon unabhängig.</p>
+        <summary data-i18n="faq.q1">Kostet SplitTip etwas?</summary>
+        <p data-i18n="faq.a1">Nein, SplitTip ist aktuell komplett kostenlos nutzbar. Ein Abo ist für später geplant, sobald Funktionen wie Nutzerkonten und Team-Zugänge dazukommen — die Kernfunktion zum Verteilen von Trinkgeld bleibt davon unabhängig.</p>
       </details>
       <details class="faq-item">
-        <summary>Muss ich mich registrieren?</summary>
-        <p>Nein. SplitTip läuft ohne Account und ohne Login direkt im Browser — einfach die Seite öffnen und loslegen.</p>
+        <summary data-i18n="faq.q2">Muss ich mich registrieren?</summary>
+        <p data-i18n="faq.a2">Nein. SplitTip läuft ohne Account und ohne Login direkt im Browser — einfach die Seite öffnen und loslegen.</p>
       </details>
       <details class="faq-item">
-        <summary>Wo werden meine Daten gespeichert?</summary>
-        <p>Ausschließlich lokal in deinem Browser (Local Storage). Es gibt keine Server-Datenbank und nichts wird an SplitTip oder Dritte übertragen. Details dazu stehen in der <a href="/datenschutz.html">Datenschutzerklärung</a>.</p>
+        <summary data-i18n="faq.q3">Wo werden meine Daten gespeichert?</summary>
+        <p data-i18n-html="faq.a3_html">Ausschließlich lokal in deinem Browser (Local Storage). Es gibt keine Server-Datenbank und nichts wird an SplitTip oder Dritte übertragen. Details dazu stehen in der <a href="/datenschutz.html">Datenschutzerklärung</a>.</p>
       </details>
       <details class="faq-item">
-        <summary>Was passiert, wenn ich den Browser wechsle oder den Verlauf lösche?</summary>
-        <p>Da alles nur lokal gespeichert wird, sind Pools, Historie und Vorlagen an diesen einen Browser gebunden — ein Wechsel auf ein anderes Gerät oder das Löschen der Browserdaten nimmt sie mit. Wichtige Abrechnungen lassen sich vorher jederzeit als CSV oder PDF exportieren.</p>
+        <summary data-i18n="faq.q4">Was passiert, wenn ich den Browser wechsle oder den Verlauf lösche?</summary>
+        <p data-i18n="faq.a4">Da alles nur lokal gespeichert wird, sind Pools, Historie und Vorlagen an diesen einen Browser gebunden — ein Wechsel auf ein anderes Gerät oder das Löschen der Browserdaten nimmt sie mit. Wichtige Abrechnungen lassen sich vorher jederzeit als CSV oder PDF exportieren.</p>
       </details>
       <details class="faq-item">
-        <summary>Funktioniert SplitTip auf dem Handy oder Tablet?</summary>
-        <p>Ja. Die Schicht-Matrix lässt sich per Finger genauso bedienen wie mit der Maus — Balken anlegen, verschieben und an den Kanten anpassen funktioniert auf beiden Wegen.</p>
+        <summary data-i18n="faq.q5">Funktioniert SplitTip auf dem Handy oder Tablet?</summary>
+        <p data-i18n="faq.a5">Ja. Die Schicht-Matrix lässt sich per Finger genauso bedienen wie mit der Maus — Balken anlegen, verschieben und an den Kanten anpassen funktioniert auf beiden Wegen.</p>
       </details>
       <details class="faq-item">
-        <summary>Kann ich Bereiche wie Küche, Service und Bar trennen?</summary>
-        <p>Ja. Jede Person kann optional einem Bereich zugeordnet werden. Das Ergebnis zeigt dann zusätzlich Zwischensummen je Bereich — das Trinkgeld selbst bleibt weiterhin ein gemeinsamer Topf, der fair nach Schichtzeit verteilt wird.</p>
+        <summary data-i18n="faq.q6">Kann ich Bereiche wie Küche, Service und Bar trennen?</summary>
+        <p data-i18n="faq.a6">Ja. Jede Person kann optional einem Bereich zugeordnet werden. Das Ergebnis zeigt dann zusätzlich Zwischensummen je Bereich — das Trinkgeld selbst bleibt weiterhin ein gemeinsamer Topf, der fair nach Schichtzeit verteilt wird.</p>
       </details>
       <details class="faq-item">
-        <summary>Kann ich alte Abrechnungen später nachschauen?</summary>
-        <p>Ja, über die Historie. Jede berechnete Auszahlung wird automatisch gespeichert und lässt sich jederzeit wieder ansehen, exportieren oder in einen neuen Pool laden.</p>
+        <summary data-i18n="faq.q7">Kann ich alte Abrechnungen später nachschauen?</summary>
+        <p data-i18n="faq.a7">Ja, über die Historie. Jede berechnete Auszahlung wird automatisch gespeichert und lässt sich jederzeit wieder ansehen, exportieren oder in einen neuen Pool laden.</p>
       </details>
       <details class="faq-item">
-        <summary>Unterstützt SplitTip Schichten über Mitternacht?</summary>
-        <p>Ja. Eine Schicht wie 22:00–02:00 Uhr wird korrekt erkannt und intern in zwei Tagesabschnitte aufgeteilt, ohne dass du selbst rechnen musst.</p>
+        <summary data-i18n="faq.q8">Unterstützt SplitTip Schichten über Mitternacht?</summary>
+        <p data-i18n="faq.a8">Ja. Eine Schicht wie 22:00–02:00 Uhr wird korrekt erkannt und intern in zwei Tagesabschnitte aufgeteilt, ohne dass du selbst rechnen musst.</p>
       </details>
     </div>
   </div>
@@ -208,27 +209,27 @@
 <section class="band-soft" id="status">
   <div class="container">
     <div class="section-head">
-      <div class="eyebrow"><span class="dot"></span>AKTUELLER STAND</div>
-      <h2 class="display-lg">Woran gerade gebaut wird</h2>
+      <div class="eyebrow"><span class="dot"></span><span data-i18n="status.eyebrow">AKTUELLER STAND</span></div>
+      <h2 class="display-lg" data-i18n="status.title">Woran gerade gebaut wird</h2>
     </div>
     <div class="status-grid">
       <div class="status-card light">
-        <h3 class="heading-lg stitle">Phase 1 · Jetzt</h3>
-        <p class="ssub">MVP, rein clientseitig</p>
-        <div class="status-row"><span>Projekt-Setup (Vite + React + TS)</span><span class="pill pill-green micro">fertig</span></div>
-        <div class="status-row"><span>Rundungslogik (Largest-Remainder)</span><span class="pill pill-green micro">fertig</span></div>
-        <div class="status-row"><span>Schicht-Matrix mit Drag &amp; Drop</span><span class="pill pill-green micro">fertig</span></div>
-        <div class="status-row"><span>Speicherung im Browser</span><span class="pill pill-green micro">fertig</span></div>
-        <div class="status-row"><span>Text-, CSV- &amp; PDF-Export</span><span class="pill pill-green micro">fertig</span></div>
-        <div class="status-row"><span>Mitarbeiter-Stammdaten &amp; Schicht-Vorlagen</span><span class="pill pill-green micro">fertig</span></div>
-        <div class="status-row"><span>Bereiche (Küche/Service/Bar), Historie &amp; Statistik</span><span class="pill pill-green micro">fertig</span></div>
+        <h3 class="heading-lg stitle" data-i18n="status.phase1Title">Phase 1 · Jetzt</h3>
+        <p class="ssub" data-i18n="status.phase1Sub">MVP, rein clientseitig</p>
+        <div class="status-row"><span data-i18n="status.row1">Projekt-Setup (Vite + React + TS)</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row2">Rundungslogik (Largest-Remainder)</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row3">Schicht-Matrix mit Drag &amp; Drop</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row4">Speicherung im Browser</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row5">Text-, CSV- &amp; PDF-Export</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row6">Mitarbeiter-Stammdaten &amp; Schicht-Vorlagen</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row7">Bereiche (Küche/Service/Bar), Historie &amp; Statistik</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
+        <div class="status-row"><span data-i18n="status.row10">Mehrsprachigkeit (Deutsch/Englisch)</span><span class="pill pill-green micro" data-i18n="status.badgeDone">fertig</span></div>
       </div>
       <div class="status-card dark">
-        <h3 class="heading-lg stitle">Phase 2 · Geplant</h3>
-        <p class="ssub">Sobald das MVP steht</p>
-        <div class="status-row"><span>Cloud-Sync, Nutzerkonten &amp; Teams</span><span class="pill pill-dark micro">geplant</span></div>
-        <div class="status-row"><span>Abo-Abwicklung</span><span class="pill pill-dark micro">geplant</span></div>
-        <div class="status-row"><span>Mehrsprachigkeit</span><span class="pill pill-dark micro">geplant</span></div>
+        <h3 class="heading-lg stitle" data-i18n="status.phase2Title">Phase 2 · Geplant</h3>
+        <p class="ssub" data-i18n="status.phase2Sub">Sobald das MVP steht</p>
+        <div class="status-row"><span data-i18n="status.row8">Cloud-Sync, Nutzerkonten &amp; Teams</span><span class="pill pill-dark micro" data-i18n="status.badgePlanned">geplant</span></div>
+        <div class="status-row"><span data-i18n="status.row9">Abo-Abwicklung</span><span class="pill pill-dark micro" data-i18n="status.badgePlanned">geplant</span></div>
       </div>
     </div>
   </div>
@@ -238,18 +239,20 @@
   <div class="container footer-inner">
     <a class="logo" href="/" style="font-size:0.95rem;">Split<span>Tip</span></a>
     <div class="flinks">
-      <a href="#ablauf">Ablauf</a>
-      <a href="#beispiel">Beispiel</a>
-      <a href="#funktionen">Funktionen</a>
-      <a href="#faq">FAQ</a>
-      <a href="#status">Status</a>
+      <a href="#ablauf" data-i18n="nav.ablauf">Ablauf</a>
+      <a href="#beispiel" data-i18n="nav.beispiel">Beispiel</a>
+      <a href="#funktionen" data-i18n="nav.funktionen">Funktionen</a>
+      <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      <a href="#status" data-i18n="nav.status">Status</a>
       <a href="/impressum.html">Impressum</a>
       <a href="/datenschutz.html">Datenschutz</a>
     </div>
-    <span class="caption">Persönliches Projekt · Stand September 2026</span>
+    <span class="caption" data-i18n="footer.caption">Persönliches Projekt · Stand September 2026</span>
   </div>
 </footer>
 
 <script src="/theme.js" defer></script>
+<script src="/translations.js" defer></script>
+<script src="/i18n.js" defer></script>
 </body>
 </html>

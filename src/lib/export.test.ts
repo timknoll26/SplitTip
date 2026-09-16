@@ -42,6 +42,21 @@ describe('buildCsv', () => {
     expect(lines[1]).toBe('Name;Bereich;Kommt;Geht;Gewichtete Zeit (Min.);Anteil (%);Betrag (EUR)')
     expect(lines[2]).toBe('Anna;Service;18:00;22:00;240;100,00;100,00')
   })
+
+  it('renders English headers and period-decimal numbers when language is en', () => {
+    const result = calculateSplit(
+      100,
+      [participant({ id: 'p1', name: 'Anna', startTime: '18:00', endTime: '22:00' })],
+      []
+    )
+    const csv = buildCsv({ poolName: 'Saturday night', date: '2026-09-16' }, result, 'en')
+    const lines = csv.split('\r\n')
+
+    expect(lines[0]).toBe('Saturday night (Sep 16, 2026)')
+    expect(lines[1]).toBe('Name;Starts;Ends;Weighted time (min);Share (%);Amount (EUR)')
+    expect(lines[2]).toBe('Anna;18:00;22:00;240;100.00;100.00')
+    expect(lines[3]).toBe('Total;;;;;100.00')
+  })
 })
 
 describe('exportFilename', () => {

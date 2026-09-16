@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { History as HistoryIcon, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { HistoryPage } from '@/components/HistoryPage'
+import { LanguageToggle } from '@/components/LanguageToggle'
 import { PoolSetup } from '@/components/PoolSetup'
 import { ScheduleStep } from '@/components/ScheduleStep'
 import { SplitSummary } from '@/components/SplitSummary'
@@ -9,6 +10,7 @@ import { StatsPage } from '@/components/StatsPage'
 import { StepProgress } from '@/components/StepProgress'
 import { StorageNotice } from '@/components/StorageNotice'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { cn } from '@/lib/utils'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { HistoryEntry } from '@/types'
@@ -26,6 +28,7 @@ const STEP_MAX_WIDTH: Record<Step, string> = {
 }
 
 function App() {
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>('setup')
   const [overlay, setOverlay] = useState<Overlay>(null)
   const loadFromHistory = useTipPoolStore((s) => s.loadFromHistory)
@@ -48,17 +51,16 @@ function App() {
                 SplitTip
               </a>
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Faires Trinkgeld-Pooling nach Schichtzeit und Stoßzeiten.
-            </p>
+            <p className="text-sm text-muted-foreground">{t('app.tagline')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setOverlay('stats')}>
-              <TrendingUp /> Statistik
+              <TrendingUp /> {t('app.statsButton')}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setOverlay('history')}>
-              <HistoryIcon /> Historie
+              <HistoryIcon /> {t('app.historyButton')}
             </Button>
+            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

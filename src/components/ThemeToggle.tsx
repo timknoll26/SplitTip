@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 const THEME_KEY = 'splittip-theme'
 type Theme = 'light' | 'dark'
@@ -18,6 +19,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeToggle() {
+  const { t } = useTranslation()
   const [theme, setTheme] = useState<Theme>(readTheme)
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={toggle}
-      aria-label={theme === 'dark' ? 'Zu hellem Design wechseln' : 'Zu dunklem Design wechseln'}
+      aria-label={theme === 'dark' ? t('themeToggle.toLight') : t('themeToggle.toDark')}
       aria-pressed={theme === 'dark'}
     >
       {theme === 'dark' ? <Sun /> : <Moon />}

@@ -18,6 +18,7 @@ import {
   ROW_HEIGHT_PX,
   type TimelineRange,
 } from '@/lib/shift-grid'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { minutesToTime, timeToMinutes } from '@/lib/time'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { IntensityWindow } from '@/types'
@@ -67,6 +68,7 @@ function NameSuggestions({
   onSelect: (name: string) => void
   onRemove: (name: string) => void
 }) {
+  const { t } = useTranslation()
   const [rect, setRect] = useState(() => anchorEl.getBoundingClientRect())
 
   useEffect(() => {
@@ -104,7 +106,7 @@ function NameSuggestions({
           </button>
           <button
             type="button"
-            aria-label={`${name} aus Stammdaten entfernen`}
+            aria-label={t('shiftMatrix.removeSuggestionAria', { name })}
             className="shrink-0 rounded-sm p-0.5 text-muted-foreground opacity-0 hover:text-foreground group-hover:opacity-100"
             onClick={(e) => {
               e.stopPropagation()
@@ -160,6 +162,7 @@ function IntensityBandsOverlay({
  * writes to the same store the calculator already consumes.
  */
 export function ShiftMatrix() {
+  const { t } = useTranslation()
   const participants = useTipPoolStore((s) => s.participants)
   const intensityWindows = useTipPoolStore((s) => s.intensityWindows)
   const totalTip = useTipPoolStore((s) => s.totalTip)
@@ -267,7 +270,7 @@ export function ShiftMatrix() {
                     className="sticky left-0 z-20 flex shrink-0 items-center gap-1.5 border-r border-border bg-card px-2.5"
                     style={{ width: NAME_COLUMN_PX, height: ROW_HEIGHT_PX }}
                   >
-                    <span className="min-w-0 flex-1 truncate text-sm">{p.name || 'Unbenannt'}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm">{p.name || t('common.unnamed')}</span>
                     {p.area && (
                       <Badge variant="outline" className="shrink-0 text-[10px]">
                         {p.area}
@@ -298,7 +301,7 @@ export function ShiftMatrix() {
                   className="flex items-center justify-center py-6 text-sm text-muted-foreground"
                   style={{ width: NAME_COLUMN_PX + rangeWidthPx(range) }}
                 >
-                  Noch niemand erfasst — unten hinzufügen.
+                  {t('shiftMatrix.emptyState')}
                 </div>
               )}
             </div>
@@ -318,7 +321,7 @@ export function ShiftMatrix() {
                 }}
                 onFocus={() => setSuggestionsOpen(true)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddParticipant()}
-                placeholder="Name"
+                placeholder={t('shiftMatrix.namePlaceholder')}
                 className="h-8 min-w-0 px-2 text-sm"
                 autoComplete="off"
               />
@@ -326,7 +329,7 @@ export function ShiftMatrix() {
                 size="icon-sm"
                 onClick={() => handleAddParticipant()}
                 disabled={!draftName.trim()}
-                aria-label="Person hinzufügen"
+                aria-label={t('shiftMatrix.addPersonAria')}
               >
                 <Plus />
               </Button>
@@ -344,7 +347,7 @@ export function ShiftMatrix() {
               className="flex shrink-0 items-center px-3 text-xs text-muted-foreground"
               style={{ width: rangeWidthPx(range), height: ROW_HEIGHT_PX }}
             >
-              Name eintragen und Enter drücken, dann Schicht auf der Zeile ziehen.
+              {t('shiftMatrix.hint')}
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { minutesToTime, timeToMinutes } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import {
@@ -48,6 +49,7 @@ interface ActiveDrag extends DragOrigin {
  * the same click-vs-drag check and the same numeric popover fallback.
  */
 export function ShiftBar({ participant, range, previewOverride, onPreview, onCommit }: ShiftBarProps) {
+  const { t } = useTranslation()
   const removeParticipant = useTipPoolStore((s) => s.removeParticipant)
   const updateParticipant = useTipPoolStore((s) => s.updateParticipant)
   const areas = useTipPoolStore((s) => s.areas)
@@ -197,7 +199,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                   wider than the viewport, so centering it in the row would put it
                   off-screen at almost any scroll position. */}
               <span className="sticky pointer-events-none px-2 whitespace-nowrap" style={{ left: NAME_COLUMN_PX + 8 }}>
-                Ziehen oder tippen für Schicht
+                {t('shiftBar.emptyTrackHint')}
               </span>
             </div>
           ) : wraps ? (
@@ -225,7 +227,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                 <div
                   onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
                   className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                  aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
+                  aria-label={t('shiftBar.adjustStartAria', { name: participant.name || t('common.unnamed') })}
                 >
                   <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
                 </div>
@@ -253,7 +255,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                 <div
                   onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
                   className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                  aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
+                  aria-label={t('shiftBar.adjustEndAria', { name: participant.name || t('common.unnamed') })}
                 >
                   <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
                 </div>
@@ -281,7 +283,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
                 className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
+                aria-label={t('shiftBar.adjustStartAria', { name: participant.name || t('common.unnamed') })}
               >
                 <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
               </div>
@@ -291,7 +293,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
                 className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
+                aria-label={t('shiftBar.adjustEndAria', { name: participant.name || t('common.unnamed') })}
               >
                 <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
               </div>
@@ -316,16 +318,16 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`shift-name-${participant.id}`}>Name</Label>
+            <Label htmlFor={`shift-name-${participant.id}`}>{t('common.name')}</Label>
             <Input
               id={`shift-name-${participant.id}`}
               value={participant.name}
               onChange={(e) => updateParticipant(participant.id, { name: e.target.value })}
-              placeholder="Name"
+              placeholder={t('common.name')}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Bereich</Label>
+            <Label>{t('shiftBar.areaLabel')}</Label>
             <div className="flex flex-wrap gap-1.5">
               {areas.map((area) => (
                 <button
@@ -356,13 +358,13 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                   setCustomArea('')
                 }
               }}
-              placeholder="Eigener Bereich…"
+              placeholder={t('shiftBar.customAreaPlaceholder')}
               className="h-8 text-sm"
             />
           </div>
           <div className="flex items-end gap-2">
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor={`shift-start-${participant.id}`}>Kommt</Label>
+              <Label htmlFor={`shift-start-${participant.id}`}>{t('shiftBar.comesLabel')}</Label>
               <Input
                 id={`shift-start-${participant.id}`}
                 type="time"
@@ -371,7 +373,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               />
             </div>
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor={`shift-end-${participant.id}`}>Geht</Label>
+              <Label htmlFor={`shift-end-${participant.id}`}>{t('shiftBar.goesLabel')}</Label>
               <Input
                 id={`shift-end-${participant.id}`}
                 type="time"
@@ -389,7 +391,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               removeParticipant(participant.id)
             }}
           >
-            <Trash2 /> Entfernen
+            <Trash2 /> {t('common.remove')}
           </Button>
         </div>
       </PopoverContent>

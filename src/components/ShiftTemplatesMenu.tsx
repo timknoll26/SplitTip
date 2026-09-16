@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 
 /**
@@ -14,6 +15,7 @@ import { useTipPoolStore } from '@/stores/useTipPoolStore'
  * existing participants.
  */
 export function ShiftTemplatesMenu() {
+  const { t } = useTranslation()
   const participants = useTipPoolStore((s) => s.participants)
   const templates = useTipPoolStore((s) => s.templates)
   const saveTemplate = useTipPoolStore((s) => s.saveTemplate)
@@ -33,36 +35,37 @@ export function ShiftTemplatesMenu() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm">
-          <Layers /> Vorlagen
+          <Layers /> {t('templates.triggerButton')}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72">
         <div className="flex flex-col gap-3">
           {templates.length > 0 && (
             <div className="flex flex-col gap-1.5">
-              <Label>Besetzung laden</Label>
+              <Label>{t('templates.loadSectionLabel')}</Label>
               <div className="flex flex-col gap-1">
-                {templates.map((t) => (
-                  <div key={t.id} className="flex items-center gap-1.5">
+                {templates.map((tpl) => (
+                  <div key={tpl.id} className="flex items-center gap-1.5">
                     <Button
                       variant="ghost"
                       size="sm"
                       className="min-w-0 flex-1 justify-start"
                       onClick={() => {
-                        applyTemplate(t.id)
+                        applyTemplate(tpl.id)
                         setOpen(false)
                       }}
                     >
-                      <span className="truncate">{t.name}</span>
+                      <span className="truncate">{tpl.name}</span>
                       <span className="shrink-0 text-xs text-muted-foreground">
-                        {t.members.length} {t.members.length === 1 ? 'Person' : 'Personen'}
+                        {tpl.members.length}{' '}
+                        {tpl.members.length === 1 ? t('templates.personSingular') : t('templates.personPlural')}
                       </span>
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={`Vorlage "${t.name}" löschen`}
-                      onClick={() => removeTemplate(t.id)}
+                      aria-label={t('templates.deleteAria', { name: tpl.name })}
+                      onClick={() => removeTemplate(tpl.id)}
                     >
                       <Trash2 />
                     </Button>
@@ -73,14 +76,14 @@ export function ShiftTemplatesMenu() {
           )}
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="template-name">Aktuelle Besetzung speichern</Label>
+            <Label htmlFor="template-name">{t('templates.saveSectionLabel')}</Label>
             <div className="flex gap-1.5">
               <Input
                 id="template-name"
                 value={draftName}
                 onChange={(e) => setDraftName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                placeholder="z. B. Standard Wochenende"
+                placeholder={t('templates.saveNamePlaceholder')}
                 disabled={participants.length === 0}
                 className="h-8 text-sm"
               />
@@ -89,13 +92,11 @@ export function ShiftTemplatesMenu() {
                 onClick={handleSave}
                 disabled={!draftName.trim() || participants.length === 0}
               >
-                Speichern
+                {t('templates.saveButton')}
               </Button>
             </div>
             {participants.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                Erst Personen mit Zeiten erfassen, dann als Vorlage speichern.
-              </p>
+              <p className="text-xs text-muted-foreground">{t('templates.emptyHint')}</p>
             )}
           </div>
         </div>

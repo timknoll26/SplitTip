@@ -29,7 +29,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 ## Später
 
 - [x] Trinkgeld-Statistik pro Person über Zeit — eigene Ansicht ("Statistik"-Button im Header) wertet die Historie pro Person aus (Namen case-insensitiv zusammengeführt), zeigt Gesamtsumme/gewichtete Zeit über alle Pools sowie aufklappbar die chronologische Aufschlüsselung pro Pool
-- [ ] Mehrsprachigkeit
+- [x] Mehrsprachigkeit — Deutsch/Englisch. React-App: eigener `useLanguageStore` (persistiert, analog zum Theme) + `useTranslation()`-Hook mit flachem, typsicherem Übersetzungs-Dictionary (`lib/i18n/translations.ts`, per Test auf identische Keys in beiden Sprachen sowie gleiche `{{platzhalter}}` geprüft); Sprachumschalter im Header neben dem Theme-Toggle. Zahlen-/Datumsformatierung (`formatEUR`, `formatDate`, `formatPercent`) sowie CSV-/PDF-Export und WhatsApp-Text sind sprachabhängig (inkl. Dezimaltrennzeichen). Landing Page: eigenes, abhängigkeitsfreies Vanilla-JS-i18n (`public/translations.js` + `public/i18n.js`, `data-i18n`/`data-i18n-html`/`data-i18n-aria`-Attribute), Sprachpräferenz teilt sich denselben `localStorage`-Schlüssel wie die App. Bewusst nicht übersetzt: Impressum und Datenschutzerklärung (bleiben Deutsch — rechtliche Übersetzung braucht juristische Prüfung)
 
 ## Code-Qualität (nicht dringend)
 

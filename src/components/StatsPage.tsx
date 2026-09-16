@@ -3,7 +3,8 @@ import { ArrowLeft, TrendingUp } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDateDE, formatEUR } from '@/lib/format'
+import { formatDate, formatEUR } from '@/lib/format'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { computePersonStats } from '@/lib/stats'
 import { formatDuration } from '@/lib/time'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
@@ -13,6 +14,7 @@ interface StatsPageProps {
 }
 
 export function StatsPage({ onBack }: StatsPageProps) {
+  const { t, language } = useTranslation()
   const history = useTipPoolStore((s) => s.history)
   const stats = useMemo(() => computePersonStats(history), [history])
 
@@ -21,22 +23,17 @@ export function StatsPage({ onBack }: StatsPageProps) {
       <CardHeader className="sm:px-8">
         <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
           <span className="size-1.5 rounded-full bg-primary" />
-          STATISTIK
+          {t('statsPage.eyebrow')}
         </div>
         <CardTitle className="flex items-center gap-2 text-xl">
           <TrendingUp className="size-5 text-primary" />
-          Trinkgeld pro Person
+          {t('statsPage.title')}
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Auswertung über alle Pools in deiner Historie, absteigend nach Gesamtsumme.
-        </p>
+        <p className="text-sm text-muted-foreground">{t('statsPage.description')}</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 sm:px-8">
         {stats.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            Noch keine Daten. Sobald Pools in der Historie landen, siehst du hier, wer über die Zeit
-            wie viel bekommen hat.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{t('statsPage.emptyState')}</p>
         ) : (
           <Accordion type="multiple" className="rounded-md border border-border px-3">
             {stats.map((person) => (
@@ -46,12 +43,13 @@ export function StatsPage({ onBack }: StatsPageProps) {
                     <div className="flex flex-col items-start gap-0.5">
                       <span className="font-medium text-foreground">{person.name}</span>
                       <span className="text-xs text-muted-foreground">
-                        {person.shifts.length} {person.shifts.length === 1 ? 'Pool' : 'Pools'} ·{' '}
-                        {formatDuration(person.totalWeightedMinutes)} gewichtet
+                        {person.shifts.length}{' '}
+                        {person.shifts.length === 1 ? t('statsPage.poolSingular') : t('statsPage.poolPlural')} ·{' '}
+                        {formatDuration(person.totalWeightedMinutes)} {t('common.weighted')}
                       </span>
                     </div>
                     <span className="font-mono font-semibold text-primary">
-                      {formatEUR(person.totalAmount)}
+                      {formatEUR(person.totalAmount, language)}
                     </span>
                   </div>
                 </AccordionTrigger>
@@ -60,9 +58,9 @@ export function StatsPage({ onBack }: StatsPageProps) {
                     {person.shifts.map((shift) => (
                       <div key={shift.poolId} className="flex justify-between gap-2">
                         <span>
-                          {formatDateDE(shift.date)} · {shift.poolName}
+                          {formatDate(shift.date, language)} · {shift.poolName}
                         </span>
-                        <span className="font-mono">{formatEUR(shift.amount)}</span>
+                        <span className="font-mono">{formatEUR(shift.amount, language)}</span>
                       </div>
                     ))}
                   </div>
@@ -74,7 +72,7 @@ export function StatsPage({ onBack }: StatsPageProps) {
 
         <div className="mt-2">
           <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft /> Zurück
+            <ArrowLeft /> {t('common.back')}
           </Button>
         </div>
       </CardContent>

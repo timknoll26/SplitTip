@@ -127,6 +127,15 @@ code, .code-block, .mono-num { font-family: ui-monospace, Menlo, Monaco, Consola
 :root.dark .theme-toggle .icon-sun { display: block; }
 :root.dark .theme-toggle .icon-moon { display: none; }
 
+.lang-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 36px; padding: 0 10px; border-radius: 6px;
+  border: 1px solid var(--hairline-strong); background: var(--canvas);
+  color: var(--ink); cursor: pointer; flex: none;
+  font-family: ui-monospace, Menlo, Monaco, monospace; font-size: 0.75rem; font-weight: 600;
+}
+.lang-toggle:hover { border-color: var(--ink-mute); }
+
 /* hero */
 .hero { padding-block: 56px 0; }
 .hero-inner { max-width: 640px; }
