@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { History as HistoryIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { HistoryPage } from '@/components/HistoryPage'
 import { PoolSetup } from '@/components/PoolSetup'
 import { ScheduleStep } from '@/components/ScheduleStep'
 import { SplitSummary } from '@/components/SplitSummary'
@@ -6,6 +9,8 @@ import { StepProgress } from '@/components/StepProgress'
 import { StorageNotice } from '@/components/StorageNotice'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { cn } from '@/lib/utils'
+import { useTipPoolStore } from '@/stores/useTipPoolStore'
+import type { HistoryEntry } from '@/types'
 
 const STEPS = ['setup', 'schedule', 'results'] as const
 type Step = (typeof STEPS)[number]
@@ -20,8 +25,16 @@ const STEP_MAX_WIDTH: Record<Step, string> = {
 
 function App() {
   const [step, setStep] = useState<Step>('setup')
+  const [showHistory, setShowHistory] = useState(false)
+  const loadFromHistory = useTipPoolStore((s) => s.loadFromHistory)
   const stepIndex = STEPS.indexOf(step)
-  const maxWidth = STEP_MAX_WIDTH[step]
+  const maxWidth = showHistory ? 'max-w-2xl' : STEP_MAX_WIDTH[step]
+
+  function handleRestore(entry: HistoryEntry) {
+    loadFromHistory(entry)
+    setShowHistory(false)
+    setStep('results')
+  }
 
   return (
     <div className="mx-auto flex min-h-svh flex-col gap-8 px-4 py-8 sm:py-10">
@@ -37,24 +50,35 @@ function App() {
               Faires Trinkgeld-Pooling nach Schichtzeit und Stoßzeiten.
             </p>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)}>
+              <HistoryIcon /> Historie
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
-        <StepProgress currentIndex={stepIndex} />
+        {!showHistory && <StepProgress currentIndex={stepIndex} />}
       </header>
 
       <div className={cn('mx-auto w-full', maxWidth)}>
         <StorageNotice />
       </div>
 
-      <main key={step} className={cn('mx-auto w-full animate-in fade-in slide-in-from-right-4 duration-300', maxWidth)}>
-        {step === 'setup' && <PoolSetup onNext={() => setStep('schedule')} />}
-        {step === 'schedule' && (
-          <ScheduleStep onNext={() => setStep('results')} onBack={() => setStep('setup')} />
-        )}
-        {step === 'results' && (
-          <SplitSummary onBack={() => setStep('schedule')} onReset={() => setStep('setup')} />
-        )}
-      </main>
+      {showHistory ? (
+        <main className="mx-auto w-full max-w-2xl animate-in fade-in slide-in-from-right-4 duration-300">
+          <HistoryPage onBack={() => setShowHistory(false)} onRestore={handleRestore} />
+        </main>
+      ) : (
+        <main key={step} className={cn('mx-auto w-full animate-in fade-in slide-in-from-right-4 duration-300', maxWidth)}>
+          {step === 'setup' && <PoolSetup onNext={() => setStep('schedule')} />}
+          {step === 'schedule' && (
+            <ScheduleStep onNext={() => setStep('results')} onBack={() => setStep('setup')} />
+          )}
+          {step === 'results' && (
+            <SplitSummary onBack={() => setStep('schedule')} onReset={() => setStep('setup')} />
+          )}
+        </main>
+      )}
     </div>
   )
 }

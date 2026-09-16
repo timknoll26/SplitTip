@@ -65,6 +65,18 @@ export interface SplitResult {
   roundingAdjustmentCents: number
 }
 
+export interface HistoryEntry {
+  id: string
+  poolName: string
+  /** ISO date "YYYY-MM-DD" */
+  date: string
+  /** ISO datetime, when this entry was last saved */
+  savedAt: string
+  totalTip: number
+  intensityWindows: IntensityWindow[]
+  participants: Participant[]
+}
+
 export interface WindowOverlap {
   a: IntensityWindow
   b: IntensityWindow

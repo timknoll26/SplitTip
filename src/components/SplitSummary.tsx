@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Check, Copy, RotateCcw, TriangleAlert } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -22,6 +22,7 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
   const participants = useTipPoolStore((s) => s.participants)
   const intensityWindows = useTipPoolStore((s) => s.intensityWindows)
   const resetStore = useTipPoolStore((s) => s.reset)
+  const saveCurrentToHistory = useTipPoolStore((s) => s.saveCurrentToHistory)
 
   const [copied, setCopied] = useState(false)
 
@@ -29,6 +30,13 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
     () => calculateSplit(totalTip, participants, intensityWindows),
     [totalTip, participants, intensityWindows]
   )
+
+  // Fertige Auszahlungen landen automatisch in der Historie, sobald sie hier
+  // angezeigt werden — inklusive Aktualisierung, falls man zurückgeht und
+  // etwas an diesem Pool ändert.
+  useEffect(() => {
+    if (result.totalWeightedMinutes > 0) saveCurrentToHistory()
+  }, [result, saveCurrentToHistory])
 
   async function handleCopy() {
     const text = buildWhatsAppText({ poolName, date }, result)

@@ -7,7 +7,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 - [x] Mitarbeiter-Stammdaten speichern und auswählbar machen — jeder eingetragene Name landet automatisch in einer geräteweiten Stammdaten-Liste (übersteht Pool-Reset); beim Eintippen im Zeitplan-Schritt erscheint ein Auswahl-Dropdown mit bereits bekannten Namen (bereits im aktuellen Pool aktive Namen werden ausgeblendet), Klick fügt die Person direkt hinzu; Namen lassen sich per Hover-× aus der Stammdaten-Liste entfernen
 - [ ] Mehrere Gruppen/Bereiche (Küche, Service, Bar)
 - [ ] Schicht-Vorlagen (Standardbesetzung laden)
-- [ ] Historie vergangener Abrechnungen
+- [x] Historie vergangener Abrechnungen — jede berechnete Auszahlung wird automatisch (und bei Änderungen aktualisiert) lokal in einer Historie gesammelt; eigene Ansicht über den "Historie"-Button im Header zum Ansehen/Wiederherstellen (lädt den Pool zurück in den Ergebnis-Schritt) und Löschen einzelner Einträge
 - [ ] Export als PDF und CSV
 - [x] Mitternachts-Schichten unterstützen (Schicht über 00:00 hinaus) — Rechen-Engine splittet die Schicht intern in zwei Tagesabschnitte, Matrix zeigt sie als zwei verbundene Balken (Abend-/Morgen-Teil), die zusammen verschoben und an den Außenkanten unabhängig verlängert/gekürzt werden können. Bewusst nicht unterstützt: eine Mitternachts-Schicht direkt per Ziehen über den Tagesrand hinaus *neu erstellen* — dafür im Popover (Kommt/Geht) einfach eine Geht-Zeit eintragen, die vor der Kommt-Zeit liegt, z. B. 22:00–02:00.
 

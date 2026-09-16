@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { IntensityWindow, Participant } from '@/types'
+import type { HistoryEntry, IntensityWindow, Participant } from '@/types'
 
 interface TipPoolState {
+  /** Identifies the pool currently being edited across the setup/schedule/results steps, so it can be upserted into history instead of duplicated. Regenerated on reset(). */
+  poolId: string
   poolName: string
   date: string
   totalTip: number
@@ -10,6 +12,8 @@ interface TipPoolState {
   participants: Participant[]
   /** Mitarbeiter-Stammdaten: Namen, die über Pools hinweg zur Auswahl stehen. Übersteht reset(). */
   employees: string[]
+  /** Abgeschlossene Pools, jüngste zuerst. Übersteht reset(). */
+  history: HistoryEntry[]
 
   setPoolName: (name: string) => void
   setDate: (date: string) => void
@@ -27,6 +31,12 @@ interface TipPoolState {
 
   /** Removes a name from the Stammdaten list. Does not touch existing participants. */
   removeEmployee: (name: string) => void
+
+  /** Saves (or updates, if already saved) the current pool as a history entry. No-op without participants. */
+  saveCurrentToHistory: () => void
+  removeHistoryEntry: (id: string) => void
+  /** Replaces the current pool with a saved history entry, so it can be viewed or continued. */
+  loadFromHistory: (entry: HistoryEntry) => void
 
   reset: () => void
 }
@@ -58,7 +68,9 @@ export const useTipPoolStore = create<TipPoolState>()(
     (set) => ({
       ...emptyState,
       date: todayISO(),
+      poolId: createId(),
       employees: [] as string[],
+      history: [] as HistoryEntry[],
 
       setPoolName: (name) => set({ poolName: name }),
       setDate: (date) => set({ date }),
@@ -105,7 +117,40 @@ export const useTipPoolStore = create<TipPoolState>()(
           employees: state.employees.filter((e) => e.toLowerCase() !== name.toLowerCase()),
         })),
 
-      reset: () => set({ ...emptyState, date: todayISO() }),
+      saveCurrentToHistory: () =>
+        set((state) => {
+          if (state.participants.length === 0) return state
+          const entry: HistoryEntry = {
+            id: state.poolId,
+            poolName: state.poolName,
+            date: state.date,
+            savedAt: new Date().toISOString(),
+            totalTip: state.totalTip,
+            intensityWindows: state.intensityWindows,
+            participants: state.participants,
+          }
+          const existingIndex = state.history.findIndex((h) => h.id === entry.id)
+          const history =
+            existingIndex >= 0
+              ? state.history.map((h, i) => (i === existingIndex ? entry : h))
+              : [entry, ...state.history]
+          return { history }
+        }),
+
+      removeHistoryEntry: (id) =>
+        set((state) => ({ history: state.history.filter((h) => h.id !== id) })),
+
+      loadFromHistory: (entry) =>
+        set({
+          poolId: entry.id,
+          poolName: entry.poolName,
+          date: entry.date,
+          totalTip: entry.totalTip,
+          intensityWindows: entry.intensityWindows,
+          participants: entry.participants,
+        }),
+
+      reset: () => set({ ...emptyState, date: todayISO(), poolId: createId() }),
     }),
     { name: 'splittip-storage' }
   )
