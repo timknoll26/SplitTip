@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { ArrowLeft, Download, History as HistoryIcon, RotateCcw, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, FileText, History as HistoryIcon, RotateCcw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { calculateSplit } from '@/lib/calculator'
-import { downloadCsv } from '@/lib/export'
+import { downloadCsv, downloadPdf } from '@/lib/export'
 import { formatDateDE, formatEUR } from '@/lib/format'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { HistoryEntry } from '@/types'
@@ -61,6 +61,14 @@ function HistoryRow({
           onClick={() => downloadCsv(entry, result)}
         >
           <Download />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Als PDF exportieren"
+          onClick={() => downloadPdf(entry, result)}
+        >
+          <FileText />
         </Button>
         <Button
           variant="ghost"
