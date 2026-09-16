@@ -15,11 +15,21 @@ function csvNumber(n: number): string {
 }
 
 export function buildCsv(pool: Pick<TipPool, 'poolName' | 'date'>, result: SplitResult): string {
+  const hasAreas = result.payouts.some((p) => p.area)
   const title = `${pool.poolName || 'Trinkgeld-Pool'}${pool.date ? ` (${formatDateDE(pool.date)})` : ''}`
-  const header = ['Name', 'Kommt', 'Geht', 'Gewichtete Zeit (Min.)', 'Anteil (%)', 'Betrag (EUR)']
+  const header = [
+    'Name',
+    ...(hasAreas ? ['Bereich'] : []),
+    'Kommt',
+    'Geht',
+    'Gewichtete Zeit (Min.)',
+    'Anteil (%)',
+    'Betrag (EUR)',
+  ]
   const rows = result.payouts.map((p) =>
     [
       p.name || 'Unbenannt',
+      ...(hasAreas ? [p.area ?? ''] : []),
       p.startTime,
       p.endTime,
       String(Math.round(p.weightedMinutes)),
@@ -27,7 +37,15 @@ export function buildCsv(pool: Pick<TipPool, 'poolName' | 'date'>, result: Split
       csvNumber(p.amount),
     ].map(csvField)
   )
-  const summary = ['Summe', '', '', '', '', csvNumber(result.payouts.reduce((s, p) => s + p.amount, 0))]
+  const summary = [
+    'Summe',
+    ...(hasAreas ? [''] : []),
+    '',
+    '',
+    '',
+    '',
+    csvNumber(result.payouts.reduce((s, p) => s + p.amount, 0)),
+  ]
 
   return [csvField(title), header.join(';'), ...rows.map((r) => r.join(';')), summary.join(';')].join(
     '\r\n'
@@ -76,36 +94,47 @@ interface PdfColumn {
 const PDF_MARGIN_X = 18
 const PDF_PAGE_BOTTOM = 280
 const PDF_ROW_HEIGHT = 8
-const PDF_COLUMNS: PdfColumn[] = [
-  { label: 'Name', x: PDF_MARGIN_X, width: 52, align: 'left', value: (p) => p.name || 'Unbenannt' },
-  { label: 'Kommt', x: PDF_MARGIN_X + 52, width: 18, align: 'left', value: (p) => p.startTime },
-  { label: 'Geht', x: PDF_MARGIN_X + 70, width: 18, align: 'left', value: (p) => p.endTime },
-  {
-    label: 'Gew. Zeit',
-    x: PDF_MARGIN_X + 88,
-    width: 24,
-    align: 'right',
-    value: (p) => formatDuration(p.weightedMinutes),
-  },
-  {
-    label: 'Anteil',
-    x: PDF_MARGIN_X + 112,
-    width: 20,
-    align: 'right',
-    value: (p) => formatPercent(p.hoursShare),
-  },
-  {
-    label: 'Betrag',
-    x: PDF_MARGIN_X + 132,
-    width: 30,
-    align: 'right',
-    value: (p) => (p.isUnset ? '—' : formatEUR(p.amount)),
-  },
-]
-const PDF_TABLE_WIDTH = PDF_MARGIN_X + 162 - PDF_MARGIN_X
+
+/** Lays out columns left-to-right from PDF_MARGIN_X, computing each one's x from the running total of the widths before it. */
+function layoutPdfColumns(specs: Array<Omit<PdfColumn, 'x'>>): PdfColumn[] {
+  let x = PDF_MARGIN_X
+  return specs.map((spec) => {
+    const col = { ...spec, x }
+    x += spec.width
+    return col
+  })
+}
+
+function buildPdfColumns(hasAreas: boolean): PdfColumn[] {
+  return layoutPdfColumns([
+    { label: 'Name', width: hasAreas ? 38 : 52, align: 'left', value: (p) => p.name || 'Unbenannt' },
+    ...(hasAreas
+      ? [
+          {
+            label: 'Bereich',
+            width: 26,
+            align: 'left' as const,
+            value: (p: SplitResult['payouts'][number]) => p.area ?? '',
+          },
+        ]
+      : []),
+    { label: 'Kommt', width: 18, align: 'left', value: (p) => p.startTime },
+    { label: 'Geht', width: 18, align: 'left', value: (p) => p.endTime },
+    { label: 'Gew. Zeit', width: 24, align: 'right', value: (p) => formatDuration(p.weightedMinutes) },
+    { label: 'Anteil', width: 20, align: 'right', value: (p) => formatPercent(p.hoursShare) },
+    {
+      label: 'Betrag',
+      width: 30,
+      align: 'right',
+      value: (p) => (p.isUnset ? '—' : formatEUR(p.amount)),
+    },
+  ])
+}
 
 export function buildPdf(pool: Pick<TipPool, 'poolName' | 'date'>, result: SplitResult): jsPDF {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  const columns = buildPdfColumns(result.payouts.some((p) => p.area))
+  const tableWidth = columns.reduce((sum, col) => sum + col.width, 0)
   let y = 20
 
   doc.setFont('helvetica', 'bold')
@@ -127,12 +156,12 @@ export function buildPdf(pool: Pick<TipPool, 'poolName' | 'date'>, result: Split
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9)
     doc.setTextColor(90)
-    for (const col of PDF_COLUMNS) {
+    for (const col of columns) {
       doc.text(col.label, col.align === 'right' ? col.x + col.width : col.x, y, { align: col.align })
     }
     y += 2
     doc.setDrawColor(200)
-    doc.line(PDF_MARGIN_X, y, PDF_MARGIN_X + PDF_TABLE_WIDTH, y)
+    doc.line(PDF_MARGIN_X, y, PDF_MARGIN_X + tableWidth, y)
     y += 6
   }
 
@@ -152,21 +181,21 @@ export function buildPdf(pool: Pick<TipPool, 'poolName' | 'date'>, result: Split
       drawTableHeader()
       setRowStyle()
     }
-    for (const col of PDF_COLUMNS) {
+    for (const col of columns) {
       doc.text(col.value(p), col.align === 'right' ? col.x + col.width : col.x, y, { align: col.align })
     }
     y += PDF_ROW_HEIGHT
   }
 
   doc.setDrawColor(200)
-  doc.line(PDF_MARGIN_X, y - PDF_ROW_HEIGHT + 3, PDF_MARGIN_X + PDF_TABLE_WIDTH, y - PDF_ROW_HEIGHT + 3)
+  doc.line(PDF_MARGIN_X, y - PDF_ROW_HEIGHT + 3, PDF_MARGIN_X + tableWidth, y - PDF_ROW_HEIGHT + 3)
   y += 1
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
   doc.setTextColor(20)
   doc.text('Summe', PDF_MARGIN_X, y)
   const total = result.payouts.reduce((sum, p) => sum + p.amount, 0)
-  const amountCol = PDF_COLUMNS[PDF_COLUMNS.length - 1]
+  const amountCol = columns[columns.length - 1]
   doc.text(formatEUR(total), amountCol.x + amountCol.width, y, { align: 'right' })
 
   doc.setFont('helvetica', 'normal')

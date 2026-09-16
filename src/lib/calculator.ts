@@ -111,6 +111,7 @@ function computeShiftWeight(participant: Participant, windows: IntensityWindow[]
     return {
       participantId: participant.id,
       name: participant.name,
+      area: participant.area,
       startTime: participant.startTime,
       endTime: participant.endTime,
       shiftMinutes: 0,
@@ -160,6 +161,7 @@ function computeShiftWeight(participant: Participant, windows: IntensityWindow[]
   return {
     participantId: participant.id,
     name: participant.name,
+    area: participant.area,
     startTime: participant.startTime,
     endTime: participant.endTime,
     shiftMinutes,

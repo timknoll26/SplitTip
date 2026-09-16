@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Check, Copy, Download, FileText, RotateCcw, TriangleAlert } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -31,6 +32,17 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
     () => calculateSplit(totalTip, participants, intensityWindows),
     [totalTip, participants, intensityWindows]
   )
+
+  // Nur zeigen, wenn tatsächlich mehr als ein Bereich im Einsatz ist —
+  // sonst wäre die Aufschlüsselung ein bedeutungsloser Einzeleintrag.
+  const areaSubtotals = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const p of result.payouts) {
+      if (!p.area) continue
+      map.set(p.area, (map.get(p.area) ?? 0) + p.amount)
+    }
+    return [...map.entries()]
+  }, [result])
 
   // Fertige Auszahlungen landen automatisch in der Historie, sobald sie hier
   // angezeigt werden — inklusive Aktualisierung, falls man zurückgeht und
@@ -84,13 +96,34 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
           </Alert>
         )}
 
+        {areaSubtotals.length > 1 && (
+          <div className="flex flex-wrap gap-2 text-sm">
+            {areaSubtotals.map(([area, amount]) => (
+              <div
+                key={area}
+                className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1.5"
+              >
+                <Badge variant="outline">{area}</Badge>
+                <span className="font-mono font-medium">{formatEUR(amount)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         <Accordion type="multiple" className="rounded-md border border-border px-3">
           {result.payouts.map((p) => (
             <AccordionItem key={p.participantId} value={p.participantId}>
               <AccordionTrigger>
                 <div className="flex w-full items-center justify-between gap-3">
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="font-medium text-foreground">{p.name || 'Unbenannt'}</span>
+                    <span className="flex items-center gap-1.5 font-medium text-foreground">
+                      {p.name || 'Unbenannt'}
+                      {p.area && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {p.area}
+                        </Badge>
+                      )}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {p.startTime}–{p.endTime} · {formatDuration(p.weightedMinutes)} gewichtet ·{' '}
                       {formatPercent(p.hoursShare)}

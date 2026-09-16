@@ -12,6 +12,8 @@ interface TipPoolState {
   participants: Participant[]
   /** Mitarbeiter-Stammdaten: Namen, die über Pools hinweg zur Auswahl stehen. Übersteht reset(). */
   employees: string[]
+  /** Bereiche/Gruppen (z. B. Küche, Service, Bar), die als Schnellauswahl angeboten werden. Übersteht reset(). */
+  areas: string[]
   /** Abgeschlossene Pools, jüngste zuerst. Übersteht reset(). */
   history: HistoryEntry[]
 
@@ -70,6 +72,7 @@ export const useTipPoolStore = create<TipPoolState>()(
       date: todayISO(),
       poolId: createId(),
       employees: [] as string[],
+      areas: ['Bar', 'Küche', 'Service'],
       history: [] as HistoryEntry[],
 
       setPoolName: (name) => set({ poolName: name }),
@@ -105,6 +108,7 @@ export const useTipPoolStore = create<TipPoolState>()(
       updateParticipant: (id, patch) =>
         set((state) => ({
           participants: state.participants.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+          areas: patch.area ? rememberName(state.areas, patch.area) : state.areas,
         })),
 
       removeParticipant: (id) =>

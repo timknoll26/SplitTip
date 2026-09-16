@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Plus, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { IntensityLane } from '@/components/IntensityLane'
@@ -263,10 +264,15 @@ export function ShiftMatrix() {
               {participants.map((p) => (
                 <div key={p.id} className="flex border-b border-border">
                   <div
-                    className="sticky left-0 z-20 flex shrink-0 items-center border-r border-border bg-card px-2.5"
+                    className="sticky left-0 z-20 flex shrink-0 items-center gap-1.5 border-r border-border bg-card px-2.5"
                     style={{ width: NAME_COLUMN_PX, height: ROW_HEIGHT_PX }}
                   >
-                    <span className="truncate text-sm">{p.name || 'Unbenannt'}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm">{p.name || 'Unbenannt'}</span>
+                    {p.area && (
+                      <Badge variant="outline" className="shrink-0 text-[10px]">
+                        {p.area}
+                      </Badge>
+                    )}
                   </div>
                   <ShiftBar
                     participant={p}

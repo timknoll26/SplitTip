@@ -5,7 +5,7 @@ Geplante Features, geordnet nach Bereich. Nichts hiervon ist umgesetzt — reine
 ## Kern-Features
 
 - [x] Mitarbeiter-Stammdaten speichern und auswählbar machen — jeder eingetragene Name landet automatisch in einer geräteweiten Stammdaten-Liste (übersteht Pool-Reset); beim Eintippen im Zeitplan-Schritt erscheint ein Auswahl-Dropdown mit bereits bekannten Namen (bereits im aktuellen Pool aktive Namen werden ausgeblendet), Klick fügt die Person direkt hinzu; Namen lassen sich per Hover-× aus der Stammdaten-Liste entfernen
-- [ ] Mehrere Gruppen/Bereiche (Küche, Service, Bar)
+- [x] Mehrere Gruppen/Bereiche (Küche, Service, Bar) — Mitarbeiter bekommen optional einen frei wählbaren Bereich (Schnellauswahl-Chips + eigener Text, Vorschläge merken sich über Pools hinweg); als Badge im Zeitplan und Ergebnis sichtbar, dort zusätzlich Subtotals pro Bereich, sowie eigene Spalte im CSV-/PDF-Export. Bewusst keine getrennten Pools/Trinkgeldtöpfe pro Bereich — die Gesamtsumme wird weiterhin gemeinsam nach Schichtzeit verteilt, der Bereich ist rein organisatorisch
 - [ ] Schicht-Vorlagen (Standardbesetzung laden)
 - [x] Historie vergangener Abrechnungen — jede berechnete Auszahlung wird automatisch (und bei Änderungen aktualisiert) lokal in einer Historie gesammelt; eigene Ansicht über den "Historie"-Button im Header zum Ansehen/Wiederherstellen (lädt den Pool zurück in den Ergebnis-Schritt) und Löschen einzelner Einträge
 - [x] Export als PDF — Button "PDF" im Ergebnis-Schritt sowie pro Eintrag in der Historie, per `jspdf` clientseitig erzeugt (Tabelle Name/Kommt/Geht/Gew. Zeit/Anteil/Betrag + Summenzeile, seitenumbruchfähig)

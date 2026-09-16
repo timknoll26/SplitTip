@@ -63,9 +63,11 @@ interface ActiveDrag {
 export function ShiftBar({ participant, range, previewOverride, onPreview, onCommit }: ShiftBarProps) {
   const removeParticipant = useTipPoolStore((s) => s.removeParticipant)
   const updateParticipant = useTipPoolStore((s) => s.updateParticipant)
+  const areas = useTipPoolStore((s) => s.areas)
 
   const [activeDrag, setActiveDrag] = useState<ActiveDrag | null>(null)
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [customArea, setCustomArea] = useState('')
   /** Pending-tap origin on touch — set on empty-track pointerdown, cleared on release/cancel. Not drag state: we deliberately don't capture the pointer here so a real swipe still scrolls. */
   const touchTapOrigin = useRef<{ x: number; y: number } | null>(null)
 
@@ -356,6 +358,42 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               value={participant.name}
               onChange={(e) => updateParticipant(participant.id, { name: e.target.value })}
               placeholder="Name"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Bereich</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {areas.map((area) => (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() =>
+                    updateParticipant(participant.id, {
+                      area: participant.area === area ? undefined : area,
+                    })
+                  }
+                  className={cn(
+                    'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+                    participant.area === area
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                  )}
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+            <Input
+              value={customArea}
+              onChange={(e) => setCustomArea(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customArea.trim()) {
+                  updateParticipant(participant.id, { area: customArea.trim() })
+                  setCustomArea('')
+                }
+              }}
+              placeholder="Eigener Bereich…"
+              className="h-8 text-sm"
             />
           </div>
           <div className="flex items-end gap-2">

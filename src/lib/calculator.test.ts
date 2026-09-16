@@ -44,6 +44,16 @@ describe('calculateSplit', () => {
     expect(payout.weightedMinutes).toBeCloseTo(48 + 60 + 78)
   })
 
+  it('passes the participant’s area through to the payout untouched', () => {
+    const p = participant({ id: 'p1', name: 'Anna', area: 'Küche', startTime: '18:00', endTime: '20:00' })
+    const result = calculateSplit(100, [p], [])
+    expect(result.payouts[0].area).toBe('Küche')
+
+    const unset = participant({ id: 'p2', name: 'Ben', area: 'Bar' })
+    const unsetResult = calculateSplit(100, [unset], [])
+    expect(unsetResult.payouts[0].area).toBe('Bar')
+  })
+
   it('weights a shift entirely outside all windows at 1.0x', () => {
     const windows = [window({ id: 'rush', label: 'Stoßzeit', startTime: '18:00', endTime: '21:00', multiplier: 1.3 })]
     const p = participant({ id: 'p1', name: 'Cara', startTime: '10:00', endTime: '14:00' })
