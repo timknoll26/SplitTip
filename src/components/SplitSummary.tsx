@@ -1,12 +1,15 @@
-import { useMemo, useState } from 'react'
-import { ArrowLeft, Check, Copy, RotateCcw, TriangleAlert } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowLeft, Check, Copy, Download, FileText, RotateCcw, TriangleAlert } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { calculateSplit } from '@/lib/calculator'
+import { downloadCsv, downloadPdf } from '@/lib/export'
 import { buildWhatsAppText, formatEUR, formatPercent } from '@/lib/format'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { formatDuration } from '@/lib/time'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 
@@ -16,12 +19,14 @@ interface SplitSummaryProps {
 }
 
 export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
+  const { t, language } = useTranslation()
   const poolName = useTipPoolStore((s) => s.poolName)
   const date = useTipPoolStore((s) => s.date)
   const totalTip = useTipPoolStore((s) => s.totalTip)
   const participants = useTipPoolStore((s) => s.participants)
   const intensityWindows = useTipPoolStore((s) => s.intensityWindows)
   const resetStore = useTipPoolStore((s) => s.reset)
+  const saveCurrentToHistory = useTipPoolStore((s) => s.saveCurrentToHistory)
 
   const [copied, setCopied] = useState(false)
 
@@ -30,11 +35,37 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
     [totalTip, participants, intensityWindows]
   )
 
+  // Nur zeigen, wenn tatsächlich mehr als ein Bereich im Einsatz ist —
+  // sonst wäre die Aufschlüsselung ein bedeutungsloser Einzeleintrag.
+  const areaSubtotals = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const p of result.payouts) {
+      if (!p.area) continue
+      map.set(p.area, (map.get(p.area) ?? 0) + p.amount)
+    }
+    return [...map.entries()]
+  }, [result])
+
+  // Fertige Auszahlungen landen automatisch in der Historie, sobald sie hier
+  // angezeigt werden — inklusive Aktualisierung, falls man zurückgeht und
+  // etwas an diesem Pool ändert.
+  useEffect(() => {
+    if (result.totalWeightedMinutes > 0) saveCurrentToHistory()
+  }, [result, saveCurrentToHistory])
+
   async function handleCopy() {
-    const text = buildWhatsAppText({ poolName, date }, result)
+    const text = buildWhatsAppText({ poolName, date }, result, language)
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function handleExportCsv() {
+    downloadCsv({ poolName, date }, result, language)
+  }
+
+  function handleExportPdf() {
+    downloadPdf({ poolName, date }, result, language)
   }
 
   function handleReset() {
@@ -47,24 +78,36 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
       <CardHeader className="sm:px-8">
         <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
           <span className="size-1.5 rounded-full bg-primary" />
-          AUSZAHLUNG
+          {t('splitSummary.eyebrow')}
         </div>
         <CardTitle className="text-base font-normal text-muted-foreground">
-          {poolName || 'Trinkgeld-Pool'}
+          {poolName || t('common.poolFallback')}
         </CardTitle>
         <p className="font-mono text-3xl font-semibold tracking-tight text-foreground">
-          {formatEUR(result.totalTip)}
+          {formatEUR(result.totalTip, language)}
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 sm:px-8">
         {result.totalWeightedMinutes <= 0 && (
           <Alert variant="warning">
             <TriangleAlert />
-            <AlertTitle>Keine gültigen Schichten</AlertTitle>
-            <AlertDescription>
-              Es konnte keine Verteilung berechnet werden. Prüfe die Kommt-/Geht-Zeiten deines Teams.
-            </AlertDescription>
+            <AlertTitle>{t('splitSummary.noValidShiftsTitle')}</AlertTitle>
+            <AlertDescription>{t('splitSummary.noValidShiftsDesc')}</AlertDescription>
           </Alert>
+        )}
+
+        {areaSubtotals.length > 1 && (
+          <div className="flex flex-wrap gap-2 text-sm">
+            {areaSubtotals.map(([area, amount]) => (
+              <div
+                key={area}
+                className="flex items-center gap-1.5 rounded-md bg-muted/50 px-2.5 py-1.5"
+              >
+                <Badge variant="outline">{area}</Badge>
+                <span className="font-mono font-medium">{formatEUR(amount, language)}</span>
+              </div>
+            ))}
+          </div>
         )}
 
         <Accordion type="multiple" className="rounded-md border border-border px-3">
@@ -73,28 +116,33 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
               <AccordionTrigger>
                 <div className="flex w-full items-center justify-between gap-3">
                   <div className="flex flex-col items-start gap-0.5">
-                    <span className="font-medium text-foreground">{p.name || 'Unbenannt'}</span>
+                    <span className="flex items-center gap-1.5 font-medium text-foreground">
+                      {p.name || t('common.unnamed')}
+                      {p.area && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {p.area}
+                        </Badge>
+                      )}
+                    </span>
                     <span className="text-xs text-muted-foreground">
-                      {p.startTime}–{p.endTime} · {formatDuration(p.weightedMinutes)} gewichtet ·{' '}
-                      {formatPercent(p.hoursShare)}
+                      {p.startTime}–{p.endTime} · {formatDuration(p.weightedMinutes)} {t('common.weighted')} ·{' '}
+                      {formatPercent(p.hoursShare, language)}
                     </span>
                   </div>
                   <span className="font-mono font-semibold text-primary">
-                    {p.isUnset ? '—' : formatEUR(p.amount)}
+                    {p.isUnset ? '—' : formatEUR(p.amount, language)}
                   </span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>
                 {p.isUnset ? (
-                  <p className="text-sm text-muted-foreground">
-                    Keine Schichtzeit erfasst — im Zeitplan-Schritt auf der Zeile ziehen.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('splitSummary.noShiftLong')}</p>
                 ) : (
                   <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
                     {p.windowBreakdown.map((wb) => (
                       <div key={wb.windowId} className="flex justify-between gap-2">
                         <span>
-                          {wb.label || 'Unbenannt'} ({wb.multiplier.toFixed(2)}x)
+                          {wb.label || t('common.unnamed')} ({wb.multiplier.toFixed(2)}x)
                         </span>
                         <span className="font-mono">
                           {formatDuration(wb.minutes)} → {formatDuration(wb.weightedMinutes)}
@@ -103,12 +151,12 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
                     ))}
                     {p.normalMinutes > 0 && (
                       <div className="flex justify-between gap-2">
-                        <span>Normalzeit (1.00x)</span>
+                        <span>{t('splitSummary.normalTimeLabel')}</span>
                         <span className="font-mono">{formatDuration(p.normalMinutes)}</span>
                       </div>
                     )}
                     {p.windowBreakdown.length === 0 && p.normalMinutes <= 0 && (
-                      <span>Keine Schichtzeit erfasst.</span>
+                      <span>{t('splitSummary.noShiftShort')}</span>
                     )}
                   </div>
                 )}
@@ -118,23 +166,34 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
         </Accordion>
 
         <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2.5 text-sm font-medium">
-          <span>Summe</span>
-          <span className="font-mono">{formatEUR(result.payouts.reduce((s, p) => s + p.amount, 0))}</span>
+          <span>{t('common.sum')}</span>
+          <span className="font-mono">
+            {formatEUR(result.payouts.reduce((s, p) => s + p.amount, 0), language)}
+          </span>
         </div>
 
         <Button onClick={handleCopy} variant="outline" className="gap-2">
           {copied ? <Check /> : <Copy />}
-          {copied ? 'In Zwischenablage kopiert' : 'Als WhatsApp-Text kopieren'}
+          {copied ? t('splitSummary.copiedButton') : t('splitSummary.copyButton')}
         </Button>
+
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={handleExportCsv} variant="outline" className="gap-2">
+            <Download /> CSV
+          </Button>
+          <Button onClick={handleExportPdf} variant="outline" className="gap-2">
+            <FileText /> PDF
+          </Button>
+        </div>
 
         <Separator />
 
         <div className="flex justify-between">
           <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft /> Zurück
+            <ArrowLeft /> {t('common.back')}
           </Button>
           <Button variant="outline" onClick={handleReset}>
-            <RotateCcw /> Neuer Pool
+            <RotateCcw /> {t('splitSummary.newPoolButton')}
           </Button>
         </div>
       </CardContent>

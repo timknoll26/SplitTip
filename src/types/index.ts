@@ -16,6 +16,8 @@ export interface Participant {
   startTime: string
   /** "HH:MM". Earlier than startTime means the shift crosses midnight (e.g. 22:00-02:00), not an error. */
   endTime: string
+  /** Optional Bereich/Gruppe, e.g. "Küche", "Service", "Bar". Free text, purely organizational — doesn't affect the split. */
+  area?: string
 }
 
 export interface TipPool {
@@ -38,6 +40,7 @@ export interface WindowBreakdown {
 export interface ParticipantBreakdown {
   participantId: string
   name: string
+  area?: string
   startTime: string
   endTime: string
   /** Raw clock-time length of the shift */
@@ -63,6 +66,35 @@ export interface SplitResult {
   payouts: ParticipantBreakdown[]
   /** Cents moved from raw rounding onto specific payouts to make the sum exact */
   roundingAdjustmentCents: number
+}
+
+export interface HistoryEntry {
+  id: string
+  poolName: string
+  /** ISO date "YYYY-MM-DD" */
+  date: string
+  /** ISO datetime, when this entry was last saved */
+  savedAt: string
+  totalTip: number
+  intensityWindows: IntensityWindow[]
+  participants: Participant[]
+}
+
+export interface ShiftTemplateMember {
+  name: string
+  area?: string
+  /** "HH:MM" */
+  startTime: string
+  /** "HH:MM" */
+  endTime: string
+}
+
+export interface ShiftTemplate {
+  id: string
+  name: string
+  /** ISO datetime, when this template was last saved */
+  createdAt: string
+  members: ShiftTemplateMember[]
 }
 
 export interface WindowOverlap {

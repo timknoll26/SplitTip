@@ -4,17 +4,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { minutesToTime, timeToMinutes } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import {
   clamp,
   DEFAULT_TOUCH_CREATE_MINUTES,
   DRAG_CLICK_THRESHOLD_PX,
+  type DragMode,
+  type DragOrigin,
   minutesToX,
   MIN_SHIFT_MINUTES,
-  mod1440,
   NAME_COLUMN_PX,
   PX_PER_MINUTE,
+  resolveDragInterval,
   ROW_HEIGHT_PX,
   snapMinutes,
   TOUCH_TAP_THRESHOLD_PX,
@@ -33,23 +36,8 @@ interface ShiftBarProps {
   onCommit: (startTime: string, endTime: string) => void
 }
 
-type DragMode = 'move' | 'resize-start' | 'resize-end' | 'create'
-
-interface ActiveDrag {
-  mode: DragMode
+interface ActiveDrag extends DragOrigin {
   pointerId: number
-  startClientX: number
-  originStart: number
-  originEnd: number
-  /**
-   * Only set while dragging a segment of a midnight-crossing shift:
-   * - mode 'move': the shift's duration in minutes (so the move can slide
-   *   freely around the 24h cycle instead of clamping to the day edges)
-   * - mode 'resize-start'/'resize-end': the OTHER boundary's real minute
-   *   value, since originStart/originEnd get temporarily pinned to the day
-   *   edge (0 or 1440) so that segment can be resized on its own
-   */
-  aux?: number
 }
 
 /**
@@ -61,11 +49,14 @@ interface ActiveDrag {
  * the same click-vs-drag check and the same numeric popover fallback.
  */
 export function ShiftBar({ participant, range, previewOverride, onPreview, onCommit }: ShiftBarProps) {
+  const { t } = useTranslation()
   const removeParticipant = useTipPoolStore((s) => s.removeParticipant)
   const updateParticipant = useTipPoolStore((s) => s.updateParticipant)
+  const areas = useTipPoolStore((s) => s.areas)
 
   const [activeDrag, setActiveDrag] = useState<ActiveDrag | null>(null)
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [customArea, setCustomArea] = useState('')
   /** Pending-tap origin on touch — set on empty-track pointerdown, cleared on release/cancel. Not drag state: we deliberately don't capture the pointer here so a real swipe still scrolls. */
   const touchTapOrigin = useRef<{ x: number; y: number } | null>(null)
 
@@ -137,35 +128,12 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
    * Same math for both the live preview and the final commit, so a commit
    * never depends on a pointermove having fired first — a fast or
    * programmatic drag can jump straight from pointerdown to pointerup with
-   * no move events in between.
+   * no move events in between. The interval math itself is shared with
+   * IntensityLane's drag handling — see resolveDragInterval.
    */
   function resolveDrag(e: React.PointerEvent<HTMLDivElement>, drag: ActiveDrag): { start: number; end: number } {
-    const deltaMin = (e.clientX - drag.startClientX) / PX_PER_MINUTE
-
-    if (drag.mode === 'move') {
-      if (drag.aux !== undefined) {
-        // Midnight-crossing shift: slide the whole (start, end) pair freely
-        // around the 24h cycle instead of clamping to the day edges.
-        const duration = drag.aux
-        const start = mod1440(snapMinutes(drag.originStart + deltaMin))
-        return { start, end: mod1440(start + duration) }
-      }
-      const duration = drag.originEnd - drag.originStart
-      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
-      return { start, end: start + duration }
-    }
-    if (drag.mode === 'resize-start') {
-      const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, drag.originEnd - MIN_SHIFT_MINUTES)
-      return { start, end: drag.aux ?? drag.originEnd }
-    }
-    if (drag.mode === 'resize-end') {
-      const end = clamp(snapMinutes(drag.originEnd + deltaMin), drag.originStart + MIN_SHIFT_MINUTES, range.endMinutes)
-      return { start: drag.aux ?? drag.originStart, end }
-    }
-
     const trackLeft = e.currentTarget.getBoundingClientRect().left
-    const current = clamp(snapMinutes(xToMinutes(e.clientX - trackLeft, range)), range.startMinutes, range.endMinutes)
-    return { start: Math.min(drag.originStart, current), end: Math.max(drag.originStart, current) }
+    return resolveDragInterval(drag, e.clientX, range, trackLeft)
   }
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
@@ -231,7 +199,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                   wider than the viewport, so centering it in the row would put it
                   off-screen at almost any scroll position. */}
               <span className="sticky pointer-events-none px-2 whitespace-nowrap" style={{ left: NAME_COLUMN_PX + 8 }}>
-                Ziehen oder tippen für Schicht
+                {t('shiftBar.emptyTrackHint')}
               </span>
             </div>
           ) : wraps ? (
@@ -259,7 +227,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                 <div
                   onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
                   className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                  aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
+                  aria-label={t('shiftBar.adjustStartAria', { name: participant.name || t('common.unnamed') })}
                 >
                   <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
                 </div>
@@ -287,7 +255,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
                 <div
                   onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
                   className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                  aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
+                  aria-label={t('shiftBar.adjustEndAria', { name: participant.name || t('common.unnamed') })}
                 >
                   <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
                 </div>
@@ -315,7 +283,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-start')}
                 className="absolute inset-y-0 left-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                aria-label={`Start von ${participant.name || 'Unbenannt'} anpassen`}
+                aria-label={t('shiftBar.adjustStartAria', { name: participant.name || t('common.unnamed') })}
               >
                 <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
               </div>
@@ -325,7 +293,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               <div
                 onPointerDown={(e) => handleEdgePointerDown(e, 'resize-end')}
                 className="absolute inset-y-0 right-0 flex w-3 cursor-ew-resize touch-none items-center justify-center pointer-coarse:w-5"
-                aria-label={`Ende von ${participant.name || 'Unbenannt'} anpassen`}
+                aria-label={t('shiftBar.adjustEndAria', { name: participant.name || t('common.unnamed') })}
               >
                 <GripVertical className="pointer-events-none size-3 text-primary-foreground/40" />
               </div>
@@ -350,17 +318,53 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor={`shift-name-${participant.id}`}>Name</Label>
+            <Label htmlFor={`shift-name-${participant.id}`}>{t('common.name')}</Label>
             <Input
               id={`shift-name-${participant.id}`}
               value={participant.name}
               onChange={(e) => updateParticipant(participant.id, { name: e.target.value })}
-              placeholder="Name"
+              placeholder={t('common.name')}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>{t('shiftBar.areaLabel')}</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {areas.map((area) => (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() =>
+                    updateParticipant(participant.id, {
+                      area: participant.area === area ? undefined : area,
+                    })
+                  }
+                  className={cn(
+                    'rounded-full border px-2.5 py-1 text-xs font-medium transition-colors',
+                    participant.area === area
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                  )}
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+            <Input
+              value={customArea}
+              onChange={(e) => setCustomArea(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customArea.trim()) {
+                  updateParticipant(participant.id, { area: customArea.trim() })
+                  setCustomArea('')
+                }
+              }}
+              placeholder={t('shiftBar.customAreaPlaceholder')}
+              className="h-8 text-sm"
             />
           </div>
           <div className="flex items-end gap-2">
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor={`shift-start-${participant.id}`}>Kommt</Label>
+              <Label htmlFor={`shift-start-${participant.id}`}>{t('shiftBar.comesLabel')}</Label>
               <Input
                 id={`shift-start-${participant.id}`}
                 type="time"
@@ -369,7 +373,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               />
             </div>
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor={`shift-end-${participant.id}`}>Geht</Label>
+              <Label htmlFor={`shift-end-${participant.id}`}>{t('shiftBar.goesLabel')}</Label>
               <Input
                 id={`shift-end-${participant.id}`}
                 type="time"
@@ -387,7 +391,7 @@ export function ShiftBar({ participant, range, previewOverride, onPreview, onCom
               removeParticipant(participant.id)
             }}
           >
-            <Trash2 /> Entfernen
+            <Trash2 /> {t('common.remove')}
           </Button>
         </div>
       </PopoverContent>

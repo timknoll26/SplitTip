@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 
 interface PoolSetupProps {
@@ -10,6 +11,7 @@ interface PoolSetupProps {
 }
 
 export function PoolSetup({ onNext }: PoolSetupProps) {
+  const { t } = useTranslation()
   const poolName = useTipPoolStore((s) => s.poolName)
   const date = useTipPoolStore((s) => s.date)
   const totalTip = useTipPoolStore((s) => s.totalTip)
@@ -24,28 +26,28 @@ export function PoolSetup({ onNext }: PoolSetupProps) {
       <CardHeader className="sm:px-8">
         <div className="flex items-center gap-2 text-[13px] font-medium text-primary">
           <span className="size-1.5 rounded-full bg-primary" />
-          GRUNDDATEN
+          {t('poolSetup.eyebrow')}
         </div>
         <CardTitle className="flex items-center gap-2 text-xl">
           <Wallet className="size-5 text-primary" />
-          Neuer Trinkgeld-Pool
+          {t('poolSetup.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 sm:px-8">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="pool-name">Name des Pools</Label>
+          <Label htmlFor="pool-name">{t('poolSetup.poolNameLabel')}</Label>
           <Input
             id="pool-name"
             value={poolName}
             onChange={(e) => setPoolName(e.target.value)}
-            placeholder="z. B. Samstagabend"
+            placeholder={t('poolSetup.poolNamePlaceholder')}
             autoFocus
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pool-date">Datum</Label>
+            <Label htmlFor="pool-date">{t('poolSetup.dateLabel')}</Label>
             <Input
               id="pool-date"
               type="date"
@@ -54,7 +56,7 @@ export function PoolSetup({ onNext }: PoolSetupProps) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="total-tip">Gesamttrinkgeld</Label>
+            <Label htmlFor="total-tip">{t('poolSetup.totalTipLabel')}</Label>
             <div className="relative">
               <Input
                 id="total-tip"
@@ -63,7 +65,7 @@ export function PoolSetup({ onNext }: PoolSetupProps) {
                 step={0.01}
                 value={totalTip || ''}
                 onChange={(e) => setTotalTip(Number(e.target.value))}
-                placeholder="0,00"
+                placeholder={t('poolSetup.totalTipPlaceholder')}
                 className="pr-7 font-mono"
               />
               <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
@@ -74,7 +76,7 @@ export function PoolSetup({ onNext }: PoolSetupProps) {
         </div>
 
         <Button onClick={onNext} disabled={!canContinue} className="mt-2 self-end">
-          Weiter
+          {t('poolSetup.continueButton')}
           <ArrowRight />
         </Button>
       </CardContent>

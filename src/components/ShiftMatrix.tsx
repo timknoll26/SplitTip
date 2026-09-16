@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Plus, X } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { IntensityLane } from '@/components/IntensityLane'
@@ -16,6 +18,7 @@ import {
   ROW_HEIGHT_PX,
   type TimelineRange,
 } from '@/lib/shift-grid'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 import { minutesToTime, timeToMinutes } from '@/lib/time'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { IntensityWindow } from '@/types'
@@ -46,6 +49,76 @@ function TimeAxisHeader({ range }: { range: TimelineRange }) {
         </div>
       ))}
     </div>
+  )
+}
+
+/**
+ * Rendered into a portal at a fixed position computed from the anchor's
+ * bounding box, so it escapes the matrix's horizontally-scrollable
+ * container instead of being clipped by it.
+ */
+function NameSuggestions({
+  anchorEl,
+  names,
+  onSelect,
+  onRemove,
+}: {
+  anchorEl: HTMLElement
+  names: string[]
+  onSelect: (name: string) => void
+  onRemove: (name: string) => void
+}) {
+  const { t } = useTranslation()
+  const [rect, setRect] = useState(() => anchorEl.getBoundingClientRect())
+
+  useEffect(() => {
+    function reposition() {
+      setRect(anchorEl.getBoundingClientRect())
+    }
+    reposition()
+    window.addEventListener('scroll', reposition, true)
+    window.addEventListener('resize', reposition)
+    return () => {
+      window.removeEventListener('scroll', reposition, true)
+      window.removeEventListener('resize', reposition)
+    }
+  }, [anchorEl])
+
+  return createPortal(
+    <div
+      role="listbox"
+      className="fixed z-50 max-h-48 w-56 overflow-y-auto rounded-md border border-border bg-popover py-1 shadow-md"
+      style={{ top: rect.bottom + 4, left: rect.left }}
+    >
+      {names.map((name) => (
+        <div
+          key={name}
+          role="option"
+          aria-selected={false}
+          className="group flex items-center justify-between gap-2 px-2.5 py-1.5 text-sm hover:bg-accent"
+        >
+          <button
+            type="button"
+            className="min-w-0 flex-1 truncate text-left"
+            onClick={() => onSelect(name)}
+          >
+            {name}
+          </button>
+          <button
+            type="button"
+            aria-label={t('shiftMatrix.removeSuggestionAria', { name })}
+            className="shrink-0 rounded-sm p-0.5 text-muted-foreground opacity-0 hover:text-foreground group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation()
+              onRemove(name)
+            }}
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      ))}
+    </div>,
+    document.body
   )
 }
 
@@ -89,18 +162,46 @@ function IntensityBandsOverlay({
  * writes to the same store the calculator already consumes.
  */
 export function ShiftMatrix() {
+  const { t } = useTranslation()
   const participants = useTipPoolStore((s) => s.participants)
   const intensityWindows = useTipPoolStore((s) => s.intensityWindows)
   const totalTip = useTipPoolStore((s) => s.totalTip)
+  const employees = useTipPoolStore((s) => s.employees)
   const addParticipant = useTipPoolStore((s) => s.addParticipant)
   const updateParticipant = useTipPoolStore((s) => s.updateParticipant)
+  const removeEmployee = useTipPoolStore((s) => s.removeEmployee)
 
   const [shiftDragPreview, setShiftDragPreview] = useState<ShiftDragPreview | null>(null)
   const [windowDragPreview, setWindowDragPreview] = useState<WindowDragPreview | null>(null)
   const [draftName, setDraftName] = useState('')
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false)
 
   const range: TimelineRange = FULL_DAY_RANGE
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const nameFieldRef = useRef<HTMLDivElement>(null)
+
+  const employeeSuggestions = useMemo(() => {
+    const query = draftName.trim().toLowerCase()
+    const active = new Set(participants.map((p) => p.name.trim().toLowerCase()))
+    return employees
+      .filter((name) => !active.has(name.toLowerCase()))
+      .filter((name) => !query || name.toLowerCase().includes(query))
+  }, [employees, participants, draftName])
+
+  // Close the suggestion dropdown on outside clicks. The dropdown itself is
+  // portaled to <body>, so "outside" means neither the name field nor
+  // anything rendered inside the portal (identified by its listbox role).
+  useEffect(() => {
+    if (!suggestionsOpen) return
+    function handlePointerDown(e: MouseEvent) {
+      const target = e.target as Node
+      if (nameFieldRef.current?.contains(target)) return
+      if ((target as Element).closest?.('[role="listbox"]')) return
+      setSuggestionsOpen(false)
+    }
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [suggestionsOpen])
 
   // On first mount, scroll to whatever's earliest already on the timeline
   // (or 07:00 as a sane default for an empty pool) instead of dumping the
@@ -137,11 +238,12 @@ export function ShiftMatrix() {
     )
   }, [intensityWindows, windowDragPreview])
 
-  function handleAddParticipant() {
-    if (!draftName.trim()) return
+  function handleAddParticipant(name: string = draftName) {
+    if (!name.trim()) return
     const anchor = minutesToTime(range.startMinutes)
-    addParticipant({ name: draftName.trim(), startTime: anchor, endTime: anchor })
+    addParticipant({ name: name.trim(), startTime: anchor, endTime: anchor })
     setDraftName('')
+    setSuggestionsOpen(false)
   }
 
   return (
@@ -165,10 +267,15 @@ export function ShiftMatrix() {
               {participants.map((p) => (
                 <div key={p.id} className="flex border-b border-border">
                   <div
-                    className="sticky left-0 z-20 flex shrink-0 items-center border-r border-border bg-card px-2.5"
+                    className="sticky left-0 z-20 flex shrink-0 items-center gap-1.5 border-r border-border bg-card px-2.5"
                     style={{ width: NAME_COLUMN_PX, height: ROW_HEIGHT_PX }}
                   >
-                    <span className="truncate text-sm">{p.name || 'Unbenannt'}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm">{p.name || t('common.unnamed')}</span>
+                    {p.area && (
+                      <Badge variant="outline" className="shrink-0 text-[10px]">
+                        {p.area}
+                      </Badge>
+                    )}
                   </div>
                   <ShiftBar
                     participant={p}
@@ -194,7 +301,7 @@ export function ShiftMatrix() {
                   className="flex items-center justify-center py-6 text-sm text-muted-foreground"
                   style={{ width: NAME_COLUMN_PX + rangeWidthPx(range) }}
                 >
-                  Noch niemand erfasst — unten hinzufügen.
+                  {t('shiftMatrix.emptyState')}
                 </div>
               )}
             </div>
@@ -202,30 +309,45 @@ export function ShiftMatrix() {
 
           <div className="flex border-t border-border">
             <div
+              ref={nameFieldRef}
               className="sticky left-0 z-20 flex shrink-0 items-center gap-1 border-r border-border bg-card p-1.5"
               style={{ width: NAME_COLUMN_PX }}
             >
               <Input
                 value={draftName}
-                onChange={(e) => setDraftName(e.target.value)}
+                onChange={(e) => {
+                  setDraftName(e.target.value)
+                  setSuggestionsOpen(true)
+                }}
+                onFocus={() => setSuggestionsOpen(true)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddParticipant()}
-                placeholder="Name"
+                placeholder={t('shiftMatrix.namePlaceholder')}
                 className="h-8 min-w-0 px-2 text-sm"
+                autoComplete="off"
               />
               <Button
                 size="icon-sm"
-                onClick={handleAddParticipant}
+                onClick={() => handleAddParticipant()}
                 disabled={!draftName.trim()}
-                aria-label="Person hinzufügen"
+                aria-label={t('shiftMatrix.addPersonAria')}
               >
                 <Plus />
               </Button>
+
+              {suggestionsOpen && employeeSuggestions.length > 0 && nameFieldRef.current && (
+                <NameSuggestions
+                  anchorEl={nameFieldRef.current}
+                  names={employeeSuggestions}
+                  onSelect={handleAddParticipant}
+                  onRemove={removeEmployee}
+                />
+              )}
             </div>
             <div
               className="flex shrink-0 items-center px-3 text-xs text-muted-foreground"
               style={{ width: rangeWidthPx(range), height: ROW_HEIGHT_PX }}
             >
-              Name eintragen und Enter drücken, dann Schicht auf der Zeile ziehen.
+              {t('shiftMatrix.hint')}
             </div>
           </div>
         </div>

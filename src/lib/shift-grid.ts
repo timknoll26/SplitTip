@@ -70,3 +70,65 @@ export function hourTicks(range: TimelineRange): number[] {
   for (let m = range.startMinutes; m <= range.endMinutes; m += 60) ticks.push(m)
   return ticks
 }
+
+export type DragMode = 'move' | 'resize-start' | 'resize-end' | 'create'
+
+export interface DragOrigin {
+  mode: DragMode
+  /** clientX at the moment the drag started, in the same coordinate space as the clientX later passed to resolveDragInterval. */
+  startClientX: number
+  originStart: number
+  originEnd: number
+  /**
+   * Only meaningful for a drag that can cross midnight (ShiftBar's
+   * participant shifts; intensity windows never set this):
+   * - mode 'move': the block's duration, so it can slide freely around
+   *   the 24h cycle instead of clamping to the day edges.
+   * - mode 'resize-start'/'resize-end': the OTHER boundary's real minute
+   *   value, since originStart/originEnd get temporarily pinned to a day
+   *   edge (0 or 1440) so that segment can be resized on its own.
+   */
+  aux?: number
+}
+
+/**
+ * Turns a horizontal pointer position into a new [start, end) interval for
+ * a drag in progress. Shared by ShiftBar (participant shifts, which can
+ * cross midnight via `aux`) and IntensityLane (stress windows, which
+ * can't and never set `aux`) — for every mode but 'move', an unset `aux`
+ * makes this reduce to exactly the plain non-wrapping formula.
+ *
+ * @param clientX current pointer clientX
+ * @param left the dragged track's left edge in client coordinates — only
+ *   used by 'create', to convert the current pointer position into minutes
+ */
+export function resolveDragInterval(
+  drag: DragOrigin,
+  clientX: number,
+  range: TimelineRange,
+  left: number
+): { start: number; end: number } {
+  const deltaMin = (clientX - drag.startClientX) / PX_PER_MINUTE
+
+  if (drag.mode === 'move') {
+    if (drag.aux !== undefined) {
+      const duration = drag.aux
+      const start = mod1440(snapMinutes(drag.originStart + deltaMin))
+      return { start, end: mod1440(start + duration) }
+    }
+    const duration = drag.originEnd - drag.originStart
+    const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, range.endMinutes - duration)
+    return { start, end: start + duration }
+  }
+  if (drag.mode === 'resize-start') {
+    const start = clamp(snapMinutes(drag.originStart + deltaMin), range.startMinutes, drag.originEnd - MIN_SHIFT_MINUTES)
+    return { start, end: drag.aux ?? drag.originEnd }
+  }
+  if (drag.mode === 'resize-end') {
+    const end = clamp(snapMinutes(drag.originEnd + deltaMin), drag.originStart + MIN_SHIFT_MINUTES, range.endMinutes)
+    return { start: drag.aux ?? drag.originStart, end }
+  }
+
+  const current = clamp(snapMinutes(xToMinutes(clientX - left, range)), range.startMinutes, range.endMinutes)
+  return { start: Math.min(drag.originStart, current), end: Math.max(drag.originStart, current) }
+}

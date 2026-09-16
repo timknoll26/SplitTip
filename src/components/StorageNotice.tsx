@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Info, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/useTranslation'
 
 const DISMISSED_KEY = 'splittip-storage-notice-dismissed'
 
@@ -13,6 +14,7 @@ function readDismissed(): boolean {
 }
 
 export function StorageNotice() {
+  const { t } = useTranslation()
   const [dismissed, setDismissed] = useState(readDismissed)
 
   if (dismissed) return null
@@ -30,10 +32,9 @@ export function StorageNotice() {
     <div className="flex items-start gap-3 rounded-lg border border-border bg-card px-3.5 py-3 text-sm text-muted-foreground">
       <Info className="mt-0.5 size-4 shrink-0 text-primary" />
       <p className="flex-1">
-        SplitTip speichert deine Eingaben nur lokal in deinem Browser — nichts wird an einen Server
-        gesendet. Mehr dazu in der{' '}
+        {t('storageNotice.before')}{' '}
         <a href="/datenschutz.html" className="underline underline-offset-2 hover:text-foreground">
-          Datenschutzerklärung
+          {t('storageNotice.linkText')}
         </a>
         .
       </p>
@@ -41,7 +42,7 @@ export function StorageNotice() {
         variant="ghost"
         size="icon-sm"
         onClick={handleDismiss}
-        aria-label="Hinweis schließen"
+        aria-label={t('storageNotice.dismissAria')}
         className="shrink-0"
       >
         <X />
