@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Check, Copy, RotateCcw, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, Check, Copy, Download, RotateCcw, TriangleAlert } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { calculateSplit } from '@/lib/calculator'
+import { downloadCsv } from '@/lib/export'
 import { buildWhatsAppText, formatEUR, formatPercent } from '@/lib/format'
 import { formatDuration } from '@/lib/time'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
@@ -43,6 +44,10 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
     await navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  function handleExportCsv() {
+    downloadCsv({ poolName, date }, result)
   }
 
   function handleReset() {
@@ -133,6 +138,10 @@ export function SplitSummary({ onBack, onReset }: SplitSummaryProps) {
         <Button onClick={handleCopy} variant="outline" className="gap-2">
           {copied ? <Check /> : <Copy />}
           {copied ? 'In Zwischenablage kopiert' : 'Als WhatsApp-Text kopieren'}
+        </Button>
+
+        <Button onClick={handleExportCsv} variant="outline" className="gap-2">
+          <Download /> Als CSV exportieren
         </Button>
 
         <Separator />

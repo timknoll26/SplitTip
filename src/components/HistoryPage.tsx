@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
-import { ArrowLeft, History as HistoryIcon, RotateCcw, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, History as HistoryIcon, RotateCcw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { calculateSplit } from '@/lib/calculator'
+import { downloadCsv } from '@/lib/export'
 import { formatDateDE, formatEUR } from '@/lib/format'
 import { useTipPoolStore } from '@/stores/useTipPoolStore'
 import type { HistoryEntry } from '@/types'
@@ -46,12 +47,20 @@ function HistoryRow({
         </p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <span className="font-mono text-sm font-semibold text-primary">
           {formatEUR(result.totalTip)}
         </span>
         <Button variant="outline" size="sm" onClick={onRestore}>
           <RotateCcw /> Ansehen
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Als CSV exportieren"
+          onClick={() => downloadCsv(entry, result)}
+        >
+          <Download />
         </Button>
         <Button
           variant="ghost"
